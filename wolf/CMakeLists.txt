@@ -20,6 +20,12 @@ if (LINUX)
     message("make sure libtool was installed.(apt-get install libtool-bin)")
 endif()
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if (WIN32)
+        set(WIN64 TRUE)
+    endif()
+endif()
+
 # FetchContent for cloning repositories, avaiable since CMAKE 3.11
 include(FetchContent)
 
@@ -54,12 +60,18 @@ set(LIBRARY_TYPE "SHARED" CACHE STRING "Library type")
 
 # set C/CXX ios standards
 set(CMAKE_C_STANDARD 17)
-set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
-set(CMAKE_CXX_FLAGS "-fcoroutines-ts")
+
+if (MSVC)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_FLAGS "/EHsc")
+else()
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "-fcoroutines-ts -fexceptions")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+endif()
 
 # fetch gsl
 message("fetching https://github.com/microsoft/GSL.git")
@@ -138,11 +150,33 @@ set(CMAKE_CXX_CLANG_TIDY
     clang-tidy;
     -format-style=file;)  
 
-# later we will support Apple iOS
+# set defenitions
+
+if (MSVC)
+add_definitions(-D_WIN32)
+elseif (APPLE)
 add_definitions(
   -DTARGET_IPHONE_SIMULATOR=0
   -DTARGET_OS_SIMULATOR=0
   -DTARGET_OS_IPHONE=0)
+endif()
+
+if (WOLF_ENABLE_FIBER)
+add_definitions(-DWOLF_ENABLE_FIBER)
+endif()
+if (WOLF_ENABLE_SOCKET)
+add_definitions(-DWOLF_ENABLE_SOCKET)
+endif()
+
+
+# include sources
+file(GLOB_RECURSE WOLF_SRC_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wolf.hpp"
+)
+file(GLOB_RECURSE W_MEMORY_SRC_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/w_memory/*"
+)
 
 # add includes & libraries
 list(APPEND INCLUDES
@@ -156,14 +190,18 @@ include_directories(${INCLUDES})
 
 # add source codes
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
-    wolf.cpp
-    w_memory/w_string.cpp
+    ${WOLF_SRC_DIR}
+    ${W_MEMORY_SRC_DIR}
 )
-
 # link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
 
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++2b -fPIC -Wall -Wextra -pedantic)
+# create source group
+source_group("wolf" FILES ${WOLF_SRC_DIR})
+source_group("w_memory" FILES ${W_MEMORY_SRC_DIR})
+
+# add compile options
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++2b -fPIC -Wall)
 target_compile_definitions(${PROJECT_NAME} PRIVATE 
   FOLLY_ASSUME_NO_JEMALLOC 
   FOLLY_ASSUME_NO_TCMALLOC)

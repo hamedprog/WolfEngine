@@ -12,7 +12,7 @@ namespace wolf::system::memory
     {
     public:
         // default constructor
-        w_string();
+        w_string() = default;
 
         // destructor
         virtual ~w_string() = default;
@@ -38,7 +38,11 @@ namespace wolf::system::memory
         {
             if (this != &p_val)
             {
+#if _MSC_VER
+                strncpy(this->data(), p_val.data(), p_val.size());
+#else
                 strlcpy(this->data(), p_val.data(), p_val.size());
+#endif
             }
             return *this;
         }

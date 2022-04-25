@@ -267,7 +267,7 @@ if (WOLF_ENABLE_FIBER)
         FetchContent_Declare(
         boost_fiber
         GIT_REPOSITORY https://github.com/boostorg/fiber.git
-        GIT_TAG        master
+        GIT_TAG        develop
     )
     # make them available
     FetchContent_MakeAvailable(boost_assert)

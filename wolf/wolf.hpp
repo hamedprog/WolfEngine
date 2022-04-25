@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "w_memory/w_string.hpp"
 #include <gsl/gsl>
+#include "w_memory/w_string.hpp"
 
 #ifndef WOLF_API
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #define WOLF_API __declspec(dllexport)
 
@@ -24,24 +24,11 @@
 
 #include <Windows.h>
 
-BOOL APIENTRY DllMain(_In_ HMODULE pHModule, _In_ DWORD pULReasonForCall, _In_ LPVOID pLPReserved)
-{
-    switch (pULReasonForCall)
-    {
-    case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-        break;
-    }
-    return TRUE;
-}
-
 #else
 
 #define WOLF_API
 
-#endif // WIN32
+#endif // _WIN32
 
 #endif // WOLF_API
 
@@ -51,5 +38,5 @@ namespace wolf
      * returns wolf version
      * @return string format with the following style "<major>.<minor>.<patch>.<debug>"
      */
-    WOLF_API auto w_version() -> system::memory::w_string;
+    WOLF_API auto w_version()->system::memory::w_string;
 } // namespace wolf
