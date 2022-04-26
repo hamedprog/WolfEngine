@@ -19,7 +19,6 @@ namespace boost
     {
         namespace asio
         {
-
             //[fibers_asio_yield_t
             class yield_t
             {
