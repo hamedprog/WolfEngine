@@ -33,7 +33,7 @@ include(FetchContent)
 option(WOLF_ENABLE_AVX2 "Enable avx2" OFF)
 option(WOLF_ENABLE_AVX512 "Enable avx512" OFF)
 option(WOLF_ENABLE_BROTLI "Enable brotli compression" OFF)
-option(WOLF_ENABLE_FIBER "Enable fiber" OFF)
+option(WOLF_ENABLE_FIBER "Enable fiber" ON)
 option(WOLF_ENABLE_gRPC "Enable gRPC connection" OFF)
 option(WOLF_ENABLE_HTTP_CLIENT "Enable http 1.1/2 request" OFF)
 option(WOLF_ENABLE_HTTP_SERVER "Enable http 1.1/2 server" OFF)
@@ -167,7 +167,12 @@ endif()
 if (WOLF_ENABLE_SOCKET)
 add_definitions(-DWOLF_ENABLE_SOCKET)
 endif()
-
+if (WOLF_ENABLE_SOCKET)
+add_definitions(-DWOLF_ENABLE_SOCKET)
+list(APPEND INCLUDES
+  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/asio
+)
+endif()
 
 # include sources
 file(GLOB_RECURSE WOLF_SRC_DIR
@@ -176,6 +181,9 @@ file(GLOB_RECURSE WOLF_SRC_DIR
 )
 file(GLOB_RECURSE W_MEMORY_SRC_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/w_memory/*"
+)
+file(GLOB_RECURSE W_NETWORK_ASIO_DETAIL_SRC_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/w_network/asio/detail/*"
 )
 
 # add includes & libraries
@@ -192,6 +200,7 @@ include_directories(${INCLUDES})
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
     ${WOLF_SRC_DIR}
     ${W_MEMORY_SRC_DIR}
+    ${W_NETWORK_ASIO_DETAIL_SRC_DIR}
 )
 # link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
@@ -199,6 +208,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
 # create source group
 source_group("wolf" FILES ${WOLF_SRC_DIR})
 source_group("w_memory" FILES ${W_MEMORY_SRC_DIR})
+source_group("w_network/asio/detail" FILES ${W_NETWORK_ASIO_DETAIL_SRC_DIR})
 
 # add compile options
 target_compile_options(${PROJECT_NAME} PRIVATE -std=c++2b -fPIC -Wall)

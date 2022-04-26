@@ -3,12 +3,7 @@
 
 #include <wolf.hpp>
 
-TEST_CASE("wolf tests", "[single-file]")
-{
-    REQUIRE("v3.0.0.0" == wolf::w_version());
-}
-
-TEST_CASE("w_string tests", "[single-file]")
+TEST_CASE("w_memory tests", "[single-file]")
 {
     using w_string = wolf::system::memory::w_string;
     auto _str = w_string("hello");
