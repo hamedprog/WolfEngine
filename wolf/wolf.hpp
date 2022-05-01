@@ -16,7 +16,7 @@
 
 #ifndef NOMINMAX
 #define NOMINMAX
-#endif
+#endif // NOMINMAX
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -38,5 +38,5 @@ namespace wolf
      * returns wolf version
      * @return string format with the following style "<major>.<minor>.<patch>.<debug>"
      */
-    WOLF_API auto w_version()->system::memory::w_string;
+    WOLF_API auto w_version() -> system::memory::w_string;
 } // namespace wolf

@@ -32,9 +32,10 @@ auto wolf::w_version() -> w_string
     constexpr auto WOLF_DEBUG_VERSION = 0;
 
     auto _ver = fmt::format("v{}.{}.{}.{}",
-        WOLF_MAJOR_VERSION,
-        WOLF_MINOR_VERSION,
-        WOLF_PATCH_VERSION,
-        WOLF_DEBUG_VERSION);
+                            WOLF_MAJOR_VERSION,
+                            WOLF_MINOR_VERSION,
+                            WOLF_PATCH_VERSION,
+                            WOLF_DEBUG_VERSION);
+
     return w_string(_ver);
 }

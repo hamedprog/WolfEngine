@@ -57,12 +57,12 @@ namespace boost
 
         }
     }
-}
+} // namespace boost
 
 #ifdef BOOST_HAS_ABI_HEADERS
 #include BOOST_ABI_SUFFIX
 #endif
 
-#include "detail/yield.hpp"
+#include "yield_detail.hpp"
 
 #endif // BOOST_FIBERS_ASIO_YIELD_HPP

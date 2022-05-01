@@ -50,19 +50,19 @@ set(BOOST_FIBER_LIBS
     boost_intrusive
     boost_move   
     boost_range)
-
+    
 # make them available
 FetchContent_MakeAvailable(${BOOST_FIBER_LIBS})
 
 # add includes
 list(APPEND INCLUDES
-    ${boost_move_SOURCE_DIR}/include
-    ${boost_intrusive_SOURCE_DIR}/include
+    ${boost_atomic_SOURCE_DIR}/include
+    ${boost_fiber_SOURCE_DIR}/include
     ${boost_filesystem_SOURCE_DIR}/include
     ${boost_format_SOURCE_DIR}/include
-    ${boost_atomic_SOURCE_DIR}/include
+    ${boost_intrusive_SOURCE_DIR}/include
+    ${boost_move_SOURCE_DIR}/include
     ${boost_range_SOURCE_DIR}/include
-    ${boost_fiber_SOURCE_DIR}/include
 )
 
 # add libraries

@@ -1,4 +1,4 @@
-#cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_ABI=armeabi-v7a -DANDROID_NDK=$NDK -DANDROID_PLATFORM=android-21 -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a -DCMAKE_ANDROID_NDK=$NDK -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_BUILD_TYPE=Debug 
+#cmake . -B build -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake -DANDROID_ABI=armeabi-v7a -DANDROID_NDK=$NDK -DANDROID_PLATFORM=android-21 -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a -DCMAKE_ANDROID_NDK=$NDK -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_BUILD_TYPE=Debug -GNinja
 
 cmake_minimum_required(VERSION 3.22)
 
@@ -33,7 +33,7 @@ include(FetchContent)
 option(WOLF_ENABLE_AVX2 "Enable avx2" OFF)
 option(WOLF_ENABLE_AVX512 "Enable avx512" OFF)
 option(WOLF_ENABLE_BROTLI "Enable brotli compression" OFF)
-option(WOLF_ENABLE_FIBER "Enable fiber" OFF)
+option(WOLF_ENABLE_FIBER "Enable fiber" ON)
 option(WOLF_ENABLE_gRPC "Enable gRPC connection" OFF)
 option(WOLF_ENABLE_HTTP_CLIENT "Enable http 1.1/2 request" OFF)
 option(WOLF_ENABLE_HTTP_SERVER "Enable http 1.1/2 server" OFF)
@@ -49,7 +49,7 @@ option(WOLF_ENABLE_ROCKSDB_CLIENT "Enable ScyllaDB connector" OFF)
 option(WOLF_ENABLE_RTSP_CLIENT "Enable real time streaming for client" OFF)
 option(WOLF_ENABLE_RTSP_SERVER "Enable real time streaming for server" OFF)
 option(WOLF_ENABLE_SKYLLADB_CLIENT "Enable ScyllaDB connector" OFF)
-option(WOLF_ENABLE_SOCKET "Enable native socket for tcp/udp client/server" OFF)
+option(WOLF_ENABLE_SOCKET "Enable native socket for tcp/udp client/server" ON)
 option(WOLF_ENABLE_SSL "Enable WOLF SSL" OFF)
 option(WOLF_ENABLE_WEBRTC "Enable webRTC" OFF)
 option(WOLF_ENABLE_WEBSOCKET_CLIENT "Enable websocket" OFF)

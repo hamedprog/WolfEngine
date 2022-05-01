@@ -53,18 +53,19 @@ message("fetching https://github.com/boostorg/tokenizer.git")
     GIT_TAG        master
 )
 
-# make them available
-FetchContent_MakeAvailable(
+set(BOOST_ASIO_LIBS 
     boost_asio
     boost_chrono
     boost_coroutine
     boost_date_time
     boost_lexical_cast
     boost_numeric_conversion
-    boost_rational
     boost_ratio
-    boost_tokenizer
-)
+    boost_rational
+    boost_tokenizer)
+
+# make them available
+FetchContent_MakeAvailable(${BOOST_ASIO_LIBS})
 
 # add includes
 list(APPEND INCLUDES
@@ -74,20 +75,10 @@ list(APPEND INCLUDES
     ${boost_date_time_SOURCE_DIR}/include
     ${boost_lexical_cast_SOURCE_DIR}/include
     ${boost_numeric_conversion_SOURCE_DIR}/include
-    ${boost_rational_SOURCE_DIR}/include
     ${boost_ratio_SOURCE_DIR}/include
+    ${boost_rational_SOURCE_DIR}/include
     ${boost_tokenizer_SOURCE_DIR}/include
 )
 
 # add libraries
-list(APPEND LIBS 
-    boost_asio
-    boost_chrono
-    boost_coroutine
-    boost_date_time
-    boost_lexical_cast
-    boost_numeric_conversion
-    boost_ratio
-    boost_rational
-    boost_tokenizer
-)
+list(APPEND LIBS ${BOOST_ASIO_LIBS}) 

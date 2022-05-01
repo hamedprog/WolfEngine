@@ -254,11 +254,11 @@ set(BOOST_BASIC_LIBS
     boost_bind
     boost_concept_check
     boost_config
-    boost_core
-    boost_conversion
     boost_container
     boost_container_hash
     boost_context
+    boost_conversion
+    boost_core
     boost_detail
     boost_exception
     boost_function
@@ -268,20 +268,22 @@ set(BOOST_BASIC_LIBS
     boost_intrusive
     boost_io
     boost_iterator
+    boost_move
     boost_mp11
     boost_mpl
     boost_optional
     boost_pool
     boost_predef
+    boost_range
     boost_regex
     boost_smart_ptr
     boost_static_assert
     boost_system
     boost_throw_exception
     boost_tuple
-    boost_typeof
     boost_type_index
     boost_type_traits
+    boost_typeof
     boost_unordered
     boost_utility
     boost_variant2
@@ -299,11 +301,11 @@ list(APPEND INCLUDES
     ${boost_bind_SOURCE_DIR}/include
     ${boost_concept_check_SOURCE_DIR}/include
     ${boost_config_SOURCE_DIR}/include
-    ${boost_container_SOURCE_DIR}/include
     ${boost_container_hash_SOURCE_DIR}/include
+    ${boost_container_SOURCE_DIR}/include
     ${boost_context_SOURCE_DIR}/include
-    ${boost_core_SOURCE_DIR}/include
     ${boost_conversion_SOURCE_DIR}/include
+    ${boost_core_SOURCE_DIR}/include
     ${boost_detail_SOURCE_DIR}/include
     ${boost_exception_SOURCE_DIR}/include
     ${boost_function_SOURCE_DIR}/include
@@ -313,6 +315,7 @@ list(APPEND INCLUDES
     ${boost_intrusive_SOURCE_DIR}/include
     ${boost_io_SOURCE_DIR}/include
     ${boost_iterator_SOURCE_DIR}/include
+    ${boost_move_SOURCE_DIR}/include
     ${boost_mp11_SOURCE_DIR}/include
     ${boost_mpl_SOURCE_DIR}/include
     ${boost_optional_SOURCE_DIR}/include
