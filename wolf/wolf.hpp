@@ -1,42 +1,38 @@
-/*
-    Project: Wolf Engine. Copyright © 2014-2022 Pooya Eimandar
-    https://github.com/WolfEngine/WolfEngine
-*/
-
 #pragma once
 
-#include <gsl/gsl>
-#include "w_memory/w_string.hpp"
+#include <export.h>
 
-#ifndef WOLF_API
+#ifndef MODULE
+#include <string>
+#endif
 
-#ifdef _WIN32
+namespace wolf {
+/**
+ * returns wolf version
+ * @return string format with the following style
+ * "<major>.<minor>.<patch>.<debug>"
+ */
 
-#define WOLF_API __declspec(dllexport)
+EXPORT auto w_version() -> std::string {
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif // NOMINMAX
+  // std::vector<int, boost::fast_pool_allocator<int>> vect;
+  // vect.push_back(4);
+  // vect.push_back(9);
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif // WIN32_LEAN_AND_MEAN
+  // Making incompatible API changes
+  constexpr auto WOLF_MAJOR_VERSION = 3;
+  // Adding functionality in a backwards - compatible manner
+  constexpr auto WOLF_MINOR_VERSION = 0;
+  // bug fixes
+  constexpr auto WOLF_PATCH_VERSION = 0;
+  // for debugging
+  constexpr auto WOLF_DEBUG_VERSION = 0;
 
-#include <Windows.h>
+  // auto _ver = std::format(
+  //     "v{}.{}.{}.{}", WOLF_MAJOR_VERSION, WOLF_MINOR_VERSION,
+  //                 WOLF_PATCH_VERSION, WOLF_DEBUG_VERSION);
 
-#else
-
-#define WOLF_API
-
-#endif // _WIN32
-
-#endif // WOLF_API
-
-namespace wolf
-{
-    /**
-     * returns wolf version
-     * @return string format with the following style "<major>.<minor>.<patch>.<debug>"
-     */
-    WOLF_API auto w_version() -> system::memory::w_string;
+  // return std::string(_ver);
+  return std::string("3");
+}
 } // namespace wolf

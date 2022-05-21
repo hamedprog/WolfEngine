@@ -17,12 +17,6 @@ message("fetching https://github.com/boostorg/array.git")
     GIT_REPOSITORY https://github.com/boostorg/array.git
     GIT_TAG        master
 )
-message("fetching https://github.com/boostorg/assert.git")
-    FetchContent_Declare(
-    boost_assert
-    GIT_REPOSITORY https://github.com/boostorg/assert.git
-    GIT_TAG        master
-)
 message("fetching https://github.com/boostorg/bind.git")
     FetchContent_Declare(
     boost_bind
@@ -33,12 +27,6 @@ message("fetching https://github.com/boostorg/concept_check.git")
     FetchContent_Declare(
     boost_concept_check
     GIT_REPOSITORY https://github.com/boostorg/concept_check.git
-    GIT_TAG        master
-)
-message("fetching https://github.com/boostorg/config.git")
-    FetchContent_Declare(
-    boost_config
-    GIT_REPOSITORY https://github.com/boostorg/config.git
     GIT_TAG        master
 )
 message("fetching https://github.com/boostorg/container.git")
@@ -63,12 +51,6 @@ message("fetching https://github.com/boostorg/conversion.git")
     FetchContent_Declare(
     boost_conversion
     GIT_REPOSITORY https://github.com/boostorg/conversion.git
-    GIT_TAG        master
-)
-message("fetching https://github.com/boostorg/core.git")
-    FetchContent_Declare(
-    boost_core
-    GIT_REPOSITORY https://github.com/boostorg/core.git
     GIT_TAG        master
 )
 message("fetching https://github.com/boostorg/detail.git")
@@ -99,12 +81,6 @@ message("fetching https://github.com/boostorg/fusion.git")
     FetchContent_Declare(
     boost_fusion
     GIT_REPOSITORY https://github.com/boostorg/fusion.git
-    GIT_TAG        master
-)
-message("fetching https://github.com/boostorg/integer.git")
-    FetchContent_Declare(
-    boost_integer
-    GIT_REPOSITORY https://github.com/boostorg/integer.git
     GIT_TAG        master
 )
 message("fetching https://github.com/boostorg/iterator.git")
@@ -155,12 +131,6 @@ message("fetching https://github.com/boostorg/pool.git")
     GIT_REPOSITORY https://github.com/boostorg/pool.git
     GIT_TAG        master
 )
-message("fetching https://github.com/boostorg/predef.git")
-    FetchContent_Declare(
-    boost_predef
-    GIT_REPOSITORY https://github.com/boostorg/predef.git
-    GIT_TAG        master
-)
 message("fetching https://github.com/boostorg/range.git")
     FetchContent_Declare(
     boost_range
@@ -179,34 +149,16 @@ message("fetching https://github.com/boostorg/smart_ptr.git")
     GIT_REPOSITORY https://github.com/boostorg/smart_ptr.git
     GIT_TAG        master
 )
-message("fetching https://github.com/boostorg/static_assert.git")
-    FetchContent_Declare(
-    boost_static_assert
-    GIT_REPOSITORY https://github.com/boostorg/static_assert.git
-    GIT_TAG        master
-)
 message("fetching https://github.com/boostorg/system.git")
     FetchContent_Declare(
     boost_system
     GIT_REPOSITORY https://github.com/boostorg/system.git
     GIT_TAG        master
 )
-message("fetching https://github.com/boostorg/throw_exception.git")
-    FetchContent_Declare(
-    boost_throw_exception
-    GIT_REPOSITORY https://github.com/boostorg/throw_exception.git
-    GIT_TAG        master
-)
 message("fetching https://github.com/boostorg/tuple.git")
     FetchContent_Declare(
     boost_tuple
     GIT_REPOSITORY https://github.com/boostorg/tuple.git
-    GIT_TAG        master
-)
-message("fetching https://github.com/boostorg/type_traits.git")
-    FetchContent_Declare(
-    boost_type_traits
-    GIT_REPOSITORY https://github.com/boostorg/type_traits.git
     GIT_TAG        master
 )
 message("fetching https://github.com/boostorg/typeof.git")
@@ -239,32 +191,22 @@ message("fetching https://github.com/boostorg/variant2.git")
     GIT_REPOSITORY https://github.com/boostorg/variant2.git
     GIT_TAG        master
 )
-message("fetching https://github.com/boostorg/winapi.git")
-    FetchContent_Declare(
-    boost_winapi
-    GIT_REPOSITORY https://github.com/boostorg/winapi.git
-    GIT_TAG        master
-)
 
 set(BOOST_BASIC_LIBS 
     boost_algorithm
     boost_align
     boost_array
-    boost_assert 
     boost_bind
     boost_concept_check
-    boost_config
     boost_container
     boost_container_hash
     boost_context
     boost_conversion
-    boost_core
     boost_detail
     boost_exception
     boost_function
     boost_function_types
     boost_fusion
-    boost_integer
     boost_intrusive
     boost_io
     boost_iterator
@@ -272,22 +214,16 @@ set(BOOST_BASIC_LIBS
     boost_mp11
     boost_mpl
     boost_optional
-    boost_pool
-    boost_predef
     boost_range
     boost_regex
     boost_smart_ptr
-    boost_static_assert
     boost_system
-    boost_throw_exception
     boost_tuple
     boost_type_index
-    boost_type_traits
     boost_typeof
     boost_unordered
     boost_utility
-    boost_variant2
-    boost_winapi)
+    boost_variant2)
 
 # make them available
 FetchContent_MakeAvailable(${BOOST_BASIC_LIBS})
@@ -297,21 +233,17 @@ list(APPEND INCLUDES
     ${boost_algorithm_SOURCE_DIR}/include
     ${boost_align_SOURCE_DIR}/include
     ${boost_array_SOURCE_DIR}/include
-    ${boost_assert_SOURCE_DIR}/include
     ${boost_bind_SOURCE_DIR}/include
     ${boost_concept_check_SOURCE_DIR}/include
-    ${boost_config_SOURCE_DIR}/include
     ${boost_container_hash_SOURCE_DIR}/include
     ${boost_container_SOURCE_DIR}/include
     ${boost_context_SOURCE_DIR}/include
     ${boost_conversion_SOURCE_DIR}/include
-    ${boost_core_SOURCE_DIR}/include
     ${boost_detail_SOURCE_DIR}/include
     ${boost_exception_SOURCE_DIR}/include
     ${boost_function_SOURCE_DIR}/include
     ${boost_function_types_SOURCE_DIR}/include
     ${boost_fusion_SOURCE_DIR}/include
-    ${boost_integer_SOURCE_DIR}/include
     ${boost_intrusive_SOURCE_DIR}/include
     ${boost_io_SOURCE_DIR}/include
     ${boost_iterator_SOURCE_DIR}/include
@@ -319,22 +251,16 @@ list(APPEND INCLUDES
     ${boost_mp11_SOURCE_DIR}/include
     ${boost_mpl_SOURCE_DIR}/include
     ${boost_optional_SOURCE_DIR}/include
-    ${boost_pool_SOURCE_DIR}/include
-    ${boost_predef_SOURCE_DIR}/include
     ${boost_range_SOURCE_DIR}/include
     ${boost_regex_SOURCE_DIR}/include
     ${boost_smart_ptr_SOURCE_DIR}/include
-    ${boost_static_assert_SOURCE_DIR}/include
     ${boost_system_SOURCE_DIR}/include
-    ${boost_throw_exception_SOURCE_DIR}/include
     ${boost_tuple_SOURCE_DIR}/include
     ${boost_type_index_SOURCE_DIR}/include
-    ${boost_type_traits_SOURCE_DIR}/include
     ${boost_typeof_SOURCE_DIR}/include
     ${boost_unordered_SOURCE_DIR}/include
     ${boost_utility_SOURCE_DIR}/include
     ${boost_variant2_SOURCE_DIR}/include
-    ${boost_winapi_SOURCE_DIR}/include
 )
 
 # add libraries

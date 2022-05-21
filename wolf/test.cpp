@@ -1,12 +1,26 @@
-#define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp> // NOLINT
+//#define CATCH_CONFIG_MAIN
+//#include <catch2/catch.hpp> // NOLINT
+//
+//import wolf;
+//import wolf.system;
+//
+//TEST_CASE("gametime tests", "[single-file]")
+//{
+//    wolf::w_version();
+//
+//
+//    //REQUIRE(_str1 != _str2); // NOLINT
+//}
 
+#ifdef MODULE
+import wolf;
+#else
 #include <wolf.hpp>
+#endif
+#include <iostream>
 
-TEST_CASE("w_memory tests", "[single-file]")
-{
-    using w_string = wolf::system::memory::w_string;
-    auto _str = w_string("hello");
+auto main() -> int {
 
-    REQUIRE(_str == "hello"); // NOLINT
+  std::cout <<  wolf::w_version() <<  std::endl;
+  return 0;
 }
