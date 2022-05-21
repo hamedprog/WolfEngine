@@ -27,7 +27,7 @@ endif()
 include(FetchContent)
 
 # CMAKE GUI Options
-option(MODULES "Enable Cpp20 Modules" ON)
+option(WOLF_ENABLE_MODULES "Enable Cpp20 Modules" ON)
 
 # physics module
 option(WOLF_PHYSX "Enable NVIDIA PhysX" OFF)
@@ -214,13 +214,16 @@ endforeach()
 file(GLOB_RECURSE WOLF_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/export.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.hpp"
+if (WOLF_ENABLE_MODULES)
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cppm"
+endif()
 )
-file(GLOB_RECURSE W_SYSTEM_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/system/gametime.cppm"
-    "${CMAKE_CURRENT_SOURCE_DIR}/system/execution.cppm"
-    "${CMAKE_CURRENT_SOURCE_DIR}/system/system.cppm"
-)
+
+#file(GLOB_RECURSE W_SYSTEM_SRC
+#    "${CMAKE_CURRENT_SOURCE_DIR}/system/gametime.cppm"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/system/execution.cppm"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/system/system.cppm"
+#)
 if (WOLF_SYSTEM_SOCKET)
     file(GLOB_RECURSE W_NET_ASIO_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/system/asio/*"
@@ -255,7 +258,7 @@ include_directories(${INCLUDES})
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
     ${WOLF_INCLUDE}
     ${WOLF_SRC}
-    ${W_SYSTEM_SRC}
+    #${W_SYSTEM_SRC}
     ${W_SYSTEM_ASIO_SRC}
 )
 
@@ -273,7 +276,7 @@ source_group("wolf" FILES ${WOLF_SRC})
 if (WOLF_SYSTEM_SOCKET)
     source_group("system/asio" FILES ${W_SYSTEM_ASIO_SRC})
 endif()
-source_group("system" FILES ${W_SYSTEM_SRC})
+#source_group("system" FILES ${W_SYSTEM_SRC})
 
 # add compile options
 if (MSVC)

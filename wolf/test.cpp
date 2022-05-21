@@ -12,7 +12,7 @@
 //    //REQUIRE(_str1 != _str2); // NOLINT
 //}
 
-#ifdef MODULE
+#ifdef WOLF_ENABLE_MODULES
 import wolf;
 #else
 #include <wolf.hpp>

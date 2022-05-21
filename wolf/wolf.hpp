@@ -2,7 +2,7 @@
 
 #include <export.h>
 
-#ifndef MODULE
+#ifndef WOLF_ENABLE_MODULES
 #include <string>
 #endif
 

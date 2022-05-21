@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef MODULE
+#ifdef WOLF_ENABLE_MODULES
 
 #ifndef EXPORT
 #define EXPORT export
