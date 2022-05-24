@@ -4,7 +4,7 @@
 */
 
 export module wolf.system;
-export import wolf.system.execution;
-export import wolf.system.gametime;
+//export import wolf.system.execution;
+//export import wolf.system.gametime;
 
 

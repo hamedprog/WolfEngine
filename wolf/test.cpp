@@ -1,26 +1,18 @@
-//#define CATCH_CONFIG_MAIN
-//#include <catch2/catch.hpp> // NOLINT
-//
-//import wolf;
-//import wolf.system;
-//
-//TEST_CASE("gametime tests", "[single-file]")
-//{
-//    wolf::w_version();
-//
-//
-//    //REQUIRE(_str1 != _str2); // NOLINT
-//}
+#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp> // NOLINT
 
-#ifdef WOLF_ENABLE_MODULES
 import wolf;
-#else
-#include <wolf.hpp>
-#endif
+
 #include <iostream>
 
-auto main() -> int {
+TEST_CASE("gametime tests", "[single-file]") {
+  auto a = 10;
+  auto gtime = gametime();
+  gtime.tick([&]() { 
 
-  std::cout <<  wolf::w_version() <<  std::endl;
-  return 0;
+      std::cout << "tick: " << a << std::endl; 
+      });
+
+  INFO("Wolf version: " << wolf::w_version()); // NOLINT
+                                               // REQUIRE( != "3.0.0.0");
 }

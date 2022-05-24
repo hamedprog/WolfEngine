@@ -27,55 +27,65 @@ endif()
 include(FetchContent)
 
 # CMAKE GUI Options
-option(WOLF_ENABLE_MODULES "Enable Cpp20 Modules" ON)
 
 # physics module
 option(WOLF_PHYSX "Enable NVIDIA PhysX" OFF)
 
 # render module
 option(WOLF_RENDER "Enable real-time rendering based on bgfx" OFF)
-option(WOLF_RENDER_RAYTRACING "Enable real-time ray tracing" OFF)
+if (NOT EMSCRIPTEN)
+    option(WOLF_RENDER_RAYTRACING "Enable real time ray tracing" OFF)
+endif()
 
 # media module
 option(WOLF_MEDIA_AV1 "Enable AV1 video coding format" OFF)
 option(WOLF_MEDIA_VP9 "Enable VP9 video coding format" OFF)
 option(WOLF_MEDIA_WEBP "Enable WebP image format" OFF)
 
-# stream module
+# stream & system modules
+if (NOT EMSCRIPTEN)
+
+# stream
 option(WOLF_STREAM_GRPC "Enable gRPC connection" OFF)
 option(WOLF_STREAM_KAFKA_CLIENT "Enable Kafka API connector" OFF)
 option(WOLF_STREAM_NNG "Enable nng socket for tcp/udp/ipc client/server" OFF)
 option(WOLF_STREAM_QUIC "Enable QUIC" OFF)
 option(WOLF_STREAM_RIST "Enable RIST streaming protocol" OFF)
-option(WOLF_STREAM_RTSP_CLIENT "Enable real time streaming protocol for client" OFF)
-option(WOLF_STREAM_RTSP_SERVER "Enable real time streaming protocol for server" OFF)
+option(WOLF_STREAM_RTSP_CLIENT "Enable RTSP for client" OFF)
+option(WOLF_STREAM_RTSP_SERVER "Enable RTSP for server" OFF)
 option(WOLF_STREAM_SRT "Enable SRT streaming protocol" OFF)
-option(WOLF_STREAM_WEBRTC_CLIENT "Enable webRTC client" OFF)
 option(WOLF_STREAM_WEBRTC_SERVER "Enable webRTC server" OFF)
-option(WOLF_STREAM_WEBSOCKET_CLIENT "Enable websocket for client" OFF)
 option(WOLF_STREAM_WEBSOCKET_SERVER "Enable websocket for server" OFF)
 
-# system module
+# system
 option(WOLF_SYSTEM_AVX2 "Enable avx2" OFF)
 option(WOLF_SYSTEM_AVX512 "Enable avx512" OFF)
 option(WOLF_SYSTEM_BROTLI "Enable brotli compression" OFF)
-option(WOLF_SYSTEM_EXECUTION "Enable Unified Executors based on libunifex" OFF)
+option(WOLF_SYSTEM_EXECUTION "Enable unified executors based on libunifex" OFF)
 option(WOLF_SYSTEM_FIBER "Enable fiber" OFF)
-option(WOLF_SYSTEM_HTTP1_1_CLIENT "Enable http 1.1 client" OFF)
 option(WOLF_SYSTEM_HTTP1_1_SERVER "Enable http 1.1 server" OFF)
-option(WOLF_SYSTEM_HTTP2_CLIENT "Enable http 2 client" OFF)
 option(WOLF_SYSTEM_HTTP2_SERVER "Enable http 2 server" OFF)
-option(WOLF_SYSTEM_LUA "Enable lua scripting" OFF)
-option(WOLF_SYSTEM_LZ4 "Enable LZ4 Compression" OFF)
-option(WOLF_SYSTEM_LZMA "Enable LZMA Compression" OFF)
-option(WOLF_SYSTEM_MIMALLOC "Enable Microsoft Mimalloc" OFF)
+option(WOLF_SYSTEM_MIMALLOC "Enable Microsoft mimalloc" OFF)
 option(WOLF_SYSTEM_POSTGRESQL_CLIENT "Enable PostgreSQL client connector" OFF)
 option(WOLF_SYSTEM_RAFT "Enable raft algorithm" OFF)
 option(WOLF_SYSTEM_REDIS_CLIENT "Enable ScyllaDB client connector" OFF)
-option(WOLF_SYSTEM_ROCKSDB_CLIENT "Enable ScyllaDB client connector" OFF)
+option(WOLF_SYSTEM_ROCKSDB_CLIENT "Enable rockSDB client connector" OFF)
 option(WOLF_SYSTEM_SOCKET "Enable native socket for tcp/udp client/server" OFF)
 option(WOLF_SYSTEM_SSL "Enable WOLF SSL" OFF)
 option(WOLF_SYSTEM_WEBKIT "Enable WebKit" OFF)
+
+endif()
+
+# stream
+option(WOLF_STREAM_WEBRTC_CLIENT "Enable webRTC client" OFF)
+option(WOLF_STREAM_WEBSOCKET_CLIENT "Enable websocket for client" OFF)
+
+#system
+option(WOLF_SYSTEM_HTTP1_1_CLIENT "Enable http 1.1 client" OFF)
+option(WOLF_SYSTEM_HTTP2_CLIENT "Enable http 2 client" OFF)
+option(WOLF_SYSTEM_LUA "Enable lua scripting" OFF)
+option(WOLF_SYSTEM_LZ4 "Enable LZ4 Compression" OFF)
+option(WOLF_SYSTEM_LZMA "Enable LZMA Compression" OFF)
 
 # set type of library
 set(LIBRARY_TYPE "STATIC" CACHE STRING "Library type")
@@ -87,7 +97,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 if (MSVC)
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_FLAGS "/EHsc")
+set(CMAKE_CXX_FLAGS "/EHsc /W4")
 else()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "-fcoroutines-ts -fexceptions")
@@ -95,13 +105,15 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 
-# fetch catch2 for tests
-message("fetching https://github.com/catchorg/Catch2.git")
-FetchContent_Declare(
-  catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v2.x
-)
+if (NOT EMSCRIPTEN)
+    # fetch catch2 for tests
+    message("fetching https://github.com/catchorg/Catch2.git")
+    FetchContent_Declare(
+      catch2
+      GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+      GIT_TAG        v2.x
+    )
+endif()
 
 # fetch gsl
 message("fetching https://github.com/microsoft/GSL.git")
@@ -142,7 +154,7 @@ set(INCLUDES
 )
 
 # fetch boost pool
-#include("cmake/fetch_boost_pool.cmake")
+include("cmake/fetch_boost_pool.cmake")
 
 # fetch boost fiber or asio dependencies
 if (WOLF_ENABLE_FIBER OR WOLF_ENABLE_SOCKET)
@@ -166,7 +178,9 @@ endif()
 
 # change some options of CMAKE dependencies
 # set(EXPAT_SHARED_LIBS OFF CACHE BOOL "EXPAT_SHARED_LIBS")
-FetchContent_Populate(catch2)
+if (NOT EMSCRIPTEN)
+    FetchContent_Populate(catch2)
+endif()
 FetchContent_Populate(gsl)
 
 if (WOLF_SYSTEM_MIMALLOC)
@@ -211,19 +225,16 @@ foreach (_var ${_vars})
 endforeach()
 
 # include sources
-file(GLOB_RECURSE WOLF_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/export.h"
+file(GLOB_RECURSE WOLF_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.hpp"
-if (WOLF_ENABLE_MODULES)
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cppm"
-endif()
 )
 
-#file(GLOB_RECURSE W_SYSTEM_SRC
-#    "${CMAKE_CURRENT_SOURCE_DIR}/system/gametime.cppm"
-#    "${CMAKE_CURRENT_SOURCE_DIR}/system/execution.cppm"
-#    "${CMAKE_CURRENT_SOURCE_DIR}/system/system.cppm"
-#)
+file(GLOB_RECURSE W_SYSTEM_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/system/gametime.cppm"
+    #"${CMAKE_CURRENT_SOURCE_DIR}/system/execution.cppm"
+    "${CMAKE_CURRENT_SOURCE_DIR}/system/system.cppm"
+)
 if (WOLF_SYSTEM_SOCKET)
     file(GLOB_RECURSE W_NET_ASIO_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/system/asio/*"
@@ -232,12 +243,13 @@ endif()
 
 # add includes & libraries
 list(APPEND INCLUDES
-  #${boost_pool_SOURCE_DIR}/include
+  ${boost_pool_SOURCE_DIR}/include
   ${boost_preprocessor_SOURCE_DIR}/include
+if (NOT EMSCRIPTEN)
   ${catch2_SOURCE_DIR}/single_include
+endif()
   ${gsl_SOURCE_DIR}/include
 )
-
 
 if (WOLF_SYSTEM_MIMALLOC)
     list(APPEND INCLUDES
@@ -256,9 +268,8 @@ include_directories(${INCLUDES})
 
 # add source codes
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
-    ${WOLF_INCLUDE}
-    ${WOLF_SRC}
-    #${W_SYSTEM_SRC}
+    ${WOLF_SRCS}
+    ${W_SYSTEM_SRC}
     ${W_SYSTEM_ASIO_SRC}
 )
 
@@ -272,21 +283,18 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
 
 # create source group
-source_group("wolf" FILES ${WOLF_SRC})
+source_group("wolf" FILES 
+    ${WOLF_SRCS}
+)
 if (WOLF_SYSTEM_SOCKET)
     source_group("system/asio" FILES ${W_SYSTEM_ASIO_SRC})
 endif()
-#source_group("system" FILES ${W_SYSTEM_SRC})
+source_group("system" FILES ${W_SYSTEM_SRC})
 
 # add compile options
-if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
-else()
+if (NOT MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE -std=c++2b -fPIC -Wall)
 endif()
-target_compile_definitions(${PROJECT_NAME} PRIVATE 
-  FOLLY_ASSUME_NO_JEMALLOC 
-  FOLLY_ASSUME_NO_TCMALLOC)
 
 # build tests
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Android")
@@ -296,7 +304,5 @@ if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Android")
   if (MSVC)
     target_compile_options(${TEST_PROJECT_NAME} PRIVATE -std=c++2b)
   endif()
-  target_compile_definitions(${TEST_PROJECT_NAME} PRIVATE 
-    FOLLY_ASSUME_NO_JEMALLOC 
-    FOLLY_ASSUME_NO_TCMALLOC)
+  #target_compile_definitions(${TEST_PROJECT_NAME} PRIVATE )
 endif()
