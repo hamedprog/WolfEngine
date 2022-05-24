@@ -4,15 +4,25 @@
 import wolf;
 
 #include <iostream>
+#include <format>
 
-TEST_CASE("gametime tests", "[single-file]") {
-  auto a = 10;
+TEST_CASE("gametime", "[single-file]") {
+
   auto gtime = gametime();
-  gtime.tick([&]() { 
+  gtime.set_fixed_time_step(true);
+  gtime.set_target_elapsed_milliseconds(16); // ticks every 16 ms (60 fps)
 
-      std::cout << "tick: " << a << std::endl; 
-      });
+  while (true) {
+    gtime.tick([&]() {
+      auto _msg = std::format(
+          "elapsed seconds from last milliseconds {}. total elapsed milliseconds {}",
+          gtime.get_elapsed_milliseconds(), gtime.get_total_milliseconds());
+      std::cout << _msg << std::endl;
+    });
 
-  INFO("Wolf version: " << wolf::w_version()); // NOLINT
-                                               // REQUIRE( != "3.0.0.0");
+    // break after 5 seconds
+    if (gtime.get_total_milliseconds() > 5000) {
+      break;
+    }
+  }
 }
