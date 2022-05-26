@@ -4,9 +4,9 @@
 */
 module;
 
+#include <gsl/gsl> 
 #include <format>
 #include <string>
-#include <gsl/gsl> 
 
 #pragma warning(push)
 #pragma warning(disable : 4668)
