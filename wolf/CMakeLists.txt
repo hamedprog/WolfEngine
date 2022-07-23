@@ -6,6 +6,14 @@ cmake_minimum_required(VERSION 3.22)
 # set(VCPKG ${VCPKG_ROOT_DIR} CACHE STRING "path to the root folder of vcpkg")
 # set(CMAKE_TOOLCHAIN_FILE "${VCPKG}/scripts/buildsystems/vcpkg.cmake")
 
+set(WEBRTC_ROOT_DIR $ENV{WEBRTC_ROOT})
+set(WEBRTC_SRC ${WEBRTC_ROOT_DIR} CACHE STRING "path to the root folder of webrtc src folder")
+
+# set it to enviroment variable if it is not set
+if ("${WEBRTC_SRC}" STREQUAL "")
+  set(WEBRTC_SRC $ENV{WEBRTC_ROOT})
+endif()
+
 project(wolf)
 set(TEST_PROJECT_NAME "${PROJECT_NAME}_tests")
 message("CXX Compiler ID is ${CMAKE_CXX_COMPILER_ID}")
@@ -28,91 +36,57 @@ include(FetchContent)
 
 # CMAKE GUI Options
 
-# physics module
-option(WOLF_PHYSX "Enable NVIDIA PhysX" OFF)
+option(WOLF_TESTS "Enable tests" ON)
 
-# render module
-option(WOLF_RENDER "Enable real-time rendering based on bgfx" OFF)
-if (NOT EMSCRIPTEN)
-    option(WOLF_RENDER_RAYTRACING "Enable real time ray tracing" OFF)
-endif()
+# media modules
+# option(WOLF_MEDIA_AV1 "Enable AV1 video coding format" OFF)
+# option(WOLF_MEDIA_IMAGE "Enable WebP/BMP/JPG/PNG formats" OFF)
+# option(WOLF_MEDIA_SCREEN_CAPTURE "Enable screen capture" OFF)
+# option(WOLF_MEDIA_VPX "Enable VPX video coding format" OFF)
 
-# media module
-option(WOLF_MEDIA_AV1 "Enable AV1 video coding format" OFF)
-option(WOLF_MEDIA_VP9 "Enable VP9 video coding format" OFF)
-option(WOLF_MEDIA_WEBP "Enable WebP image format" OFF)
+# option(WOLF_RENDER "Enable cross platform render based on BGFX" OFF)
 
-# stream & system modules
-if (NOT EMSCRIPTEN)
+# stream modules
+# option(WOLF_STREAM_GRPC "Enable gRPC connection" OFF)
+# option(WOLF_STREAM_KAFKA_CLIENT "Enable Kafka API connector" OFF)
+# option(WOLF_STREAM_NNG "Enable nng socket for tcp/udp/ipc client/server" OFF)
+# option(WOLF_STREAM_QUIC "Enable QUIC protocol" OFF)
+# option(WOLF_STREAM_RIST "Enable RIST streaming protocol" OFF)
+# option(WOLF_STREAM_RTSP_CLIENT "Enable RTSP for client" OFF)
+# option(WOLF_STREAM_RTSP_SERVER "Enable RTSP for server" OFF)
+option(WOLF_STREAM_HTTP "Enable http 1.1/2 and websocket protocols" ON)
+option(WOLF_STREAM_WEBRTC "Enable webRTC" ON)
 
-# stream
-option(WOLF_STREAM_GRPC "Enable gRPC connection" OFF)
-option(WOLF_STREAM_KAFKA_CLIENT "Enable Kafka API connector" OFF)
-option(WOLF_STREAM_NNG "Enable nng socket for tcp/udp/ipc client/server" OFF)
-option(WOLF_STREAM_QUIC "Enable QUIC" OFF)
-option(WOLF_STREAM_RIST "Enable RIST streaming protocol" OFF)
-option(WOLF_STREAM_RTSP_CLIENT "Enable RTSP for client" OFF)
-option(WOLF_STREAM_RTSP_SERVER "Enable RTSP for server" OFF)
-option(WOLF_STREAM_SRT "Enable SRT streaming protocol" OFF)
-option(WOLF_STREAM_WEBRTC_SERVER "Enable webRTC server" OFF)
-option(WOLF_STREAM_WEBSOCKET_SERVER "Enable websocket for server" OFF)
-
-# system
-option(WOLF_SYSTEM_AVX2 "Enable avx2" OFF)
-option(WOLF_SYSTEM_AVX512 "Enable avx512" OFF)
-option(WOLF_SYSTEM_BROTLI "Enable brotli compression" OFF)
-option(WOLF_SYSTEM_EXECUTION "Enable unified executors based on libunifex" OFF)
-option(WOLF_SYSTEM_FIBER "Enable fiber" OFF)
-option(WOLF_SYSTEM_HTTP1_1_SERVER "Enable http 1.1 server" OFF)
-option(WOLF_SYSTEM_HTTP2_SERVER "Enable http 2 server" OFF)
-option(WOLF_SYSTEM_MIMALLOC "Enable Microsoft mimalloc" OFF)
-option(WOLF_SYSTEM_POSTGRESQL_CLIENT "Enable PostgreSQL client connector" OFF)
-option(WOLF_SYSTEM_RAFT "Enable raft algorithm" OFF)
-option(WOLF_SYSTEM_REDIS_CLIENT "Enable ScyllaDB client connector" OFF)
-option(WOLF_SYSTEM_ROCKSDB_CLIENT "Enable rockSDB client connector" OFF)
-option(WOLF_SYSTEM_SOCKET "Enable native socket for tcp/udp client/server" OFF)
-option(WOLF_SYSTEM_SSL "Enable WOLF SSL" OFF)
-option(WOLF_SYSTEM_WEBKIT "Enable WebKit" OFF)
-
-endif()
-
-# stream
-option(WOLF_STREAM_WEBRTC_CLIENT "Enable webRTC client" OFF)
-option(WOLF_STREAM_WEBSOCKET_CLIENT "Enable websocket for client" OFF)
-
-#system
-option(WOLF_SYSTEM_HTTP1_1_CLIENT "Enable http 1.1 client" OFF)
-option(WOLF_SYSTEM_HTTP2_CLIENT "Enable http 2 client" OFF)
-option(WOLF_SYSTEM_LUA "Enable lua scripting" OFF)
-option(WOLF_SYSTEM_LZ4 "Enable LZ4 Compression" OFF)
-option(WOLF_SYSTEM_LZMA "Enable LZMA Compression" OFF)
+# system modules
+# option(WOLF_SYSTEM_AVX2 "Enable avx2" OFF)
+# option(WOLF_SYSTEM_AVX512 "Enable avx512" OFF)
+# option(WOLF_SYSTEM_BROTLI "Enable brotli compression" OFF)
+# option(WOLF_SYSTEM_LUA "Enable lua scripting" OFF)
+# option(WOLF_SYSTEM_LZ4 "Enable LZ4 Compression" OFF)
+# option(WOLF_SYSTEM_LZMA "Enable LZMA Compression" OFF)
+# option(WOLF_SYSTEM_MIMALLOC "Enable Microsoft mimalloc" OFF)
+# option(WOLF_SYSTEM_RAFT "Enable raft algorithm" OFF)
+option(WOLF_SYSTEM_EXECUTION "Enable the prototype implementation of the C++ sender/receiver async programming model based on libunifex" OFF)
 
 # set type of library
-set(LIBRARY_TYPE "STATIC" CACHE STRING "Library type")
+set(LIBRARY_TYPE "SHARED" CACHE STRING "Library type")
 
 # set C/CXX ios standards
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package (Threads)
 
 if (MSVC)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_FLAGS "/EHsc /W4")
 else()
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-fcoroutines-ts -fexceptions")
+set(CMAKE_CXX_FLAGS "-fexceptions")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-endif()
-
-if (NOT EMSCRIPTEN)
-    # fetch catch2 for tests
-    message("fetching https://github.com/catchorg/Catch2.git")
-    FetchContent_Declare(
-      catch2
-      GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-      GIT_TAG        v2.x
-    )
 endif()
 
 # fetch gsl
@@ -123,8 +97,58 @@ FetchContent_Declare(
   GIT_TAG        main
   SOURCE_SUBDIR  include
 )
+FetchContent_Populate(gsl)
 
-set(LIBS )
+# fetch expected
+# message("fetching https://github.com/TartanLlama/expected.git")
+# FetchContent_Declare(
+#   expected
+#   GIT_REPOSITORY https://github.com/TartanLlama/expected.git
+#   GIT_TAG        master
+#   SOURCE_SUBDIR  include
+# )
+# FetchContent_Populate(expected)
+
+set(INCLUDES     
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${gsl_SOURCE_DIR}/include
+  #${expected_SOURCE_DIR}/include
+)
+set(LIBS)
+
+if (NOT EMSCRIPTEN)
+    list(APPEND LIBS Threads::Threads)
+endif()
+
+if (WOLF_SYSTEM_EXECUTION)
+    # fetch libunifex
+    message("fetching https://github.com/facebookexperimental/libunifex.git")
+    FetchContent_Declare(
+        unifex
+        GIT_REPOSITORY https://github.com/facebookexperimental/libunifex.git
+        GIT_TAG        main
+    )
+    FetchContent_MakeAvailable(unifex)
+    list(APPEND INCLUDES 
+        ${unifex_SOURCE_DIR}/include
+        ${unifex_BINARY_DIR}/include
+    )
+    list(APPEND LIBS unifex)
+endif()
+
+# fetch catch2 for tests
+if (WOLF_TESTS)
+    message("fetching https://github.com/catchorg/Catch2.git")
+    FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v2.x
+    )
+    FetchContent_Populate(catch2)
+    list(APPEND INCLUDES
+        ${catch2_SOURCE_DIR}/single_include
+    )
+endif()
 
 if (WOLF_SYSTEM_MIMALLOC)
     message("fetching https://github.com/microsoft/mimalloc.git")
@@ -133,62 +157,102 @@ if (WOLF_SYSTEM_MIMALLOC)
         GIT_REPOSITORY https://github.com/microsoft/mimalloc.git
         GIT_TAG        master
     )
-   list(APPEND LIBS mimalloc-static)
-endif()
-
-# fetch libunifex
-if (WOLF_SYSTEM_EXECUTION)
-    message("fetching https://github.com/facebookexperimental/libunifex.git")
-    FetchContent_Declare(
-        unifex
-        GIT_REPOSITORY https://github.com/facebookexperimental/libunifex.git
-        GIT_TAG        main
+    FetchContent_MakeAvailable(mimalloc-static)
+    list(APPEND INCLUDES
+        ${mimalloc_static_SOURCE_DIR}/include
     )
-    list(APPEND LIBS unifex)
+    list(APPEND LIBS mimalloc-static)
 endif()
 
-# setup basic includes
-set(INCLUDES     
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party
-)
-
-# fetch boost pool
-include("cmake/fetch_boost_pool.cmake")
-
-# fetch boost fiber or asio dependencies
-if (WOLF_ENABLE_FIBER OR WOLF_ENABLE_SOCKET)
-    include("cmake/fetch_boost_basics.cmake")
-    
-    if (WOLF_ENABLE_FIBER)
-        include("cmake/fetch_boost_fiber.cmake")
-    else()
-        include("cmake/fetch_boost_asio.cmake")
+if (WOLF_STREAM_WEBRTC)
+    # we need http api for webrtc
+    set(WOLF_STREAM_HTTP ON CACHE BOOL "WOLF_STREAM_HTTP")
+   
+    # link jsoncpp to webrtc
+    list(APPEND INCLUDES
+        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include
+    )
+    if (APPLE)
+        list(APPEND LIBS 
+            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/lib/mac/${CMAKE_BUILD_TYPE}/libjsoncpp.a
+        )
     endif()
 
+    list(APPEND INCLUDES
+        ${WEBRTC_SRC}
+        ${WEBRTC_SRC}/third_party/abseil-cpp
+        ${WEBRTC_SRC}/third_party/libyuv/include
+    )
+    if (WIN32)
+        add_definitions(
+            -DWEBRTC_WIN 
+            -D__PRETTY_FUNCTION__=__FUNCTION__ 
+            -D_HAS_ITERATOR_DEBUGGING=0
+            -DUSE_X11 
+            -DHAVE_SOUND 
+            -D_WINSOCKAPI_)
+
+        list(APPEND LIBS
+            secur32 
+            dmoguids 
+            wmcodecdspuuid 
+            strmiids 
+            msdmo 
+            winmm 
+            dxgi 
+            d3d11 
+            iphlpapi 
+            dwmapi
+        )
+    elseif (APPLE)
+        add_definitions(
+            -DHAVE_SOUND 
+            -DWEBRTC_MAC 
+            -DWEBRTC_POSIX 
+            -fno-rtti)
+
+        find_library(FOUNDATION Foundation)
+        find_library(CORE_FOUNDATION CoreFoundation)
+        find_library(APPLICATION_SERVICES ApplicationServices)
+        find_library(CORE_SERVICES CoreServices)
+        find_library(CORE_AUDIO CoreAudio)
+        find_library(AUDIO_TOOLBOX AudioToolBox)
+
+        list(APPEND LIBS
+            #/Users/pooyaeimandar/Desktop/jsoncpp-master/build/lib/libjsoncpp.a
+            ${FOUNDATION} 
+            ${CORE_FOUNDATION} 
+            ${APPLICATION_SERVICES} 
+            ${CORE_SERVICES}
+            ${CORE_AUDIO} 
+            ${AUDIO_TOOLBOX} 
+        )
+    endif()
+    add_definitions(-DHAVE_JPEG)
+    link_directories(${WEBRTC_SRC}/out/${CMAKE_BUILD_TYPE}/obj/)
+    list(APPEND LIBS webrtc)
 endif()
 
-# # fetch libnng
-# message("fetching https://github.com/nanomsg/nng.git")
-# FetchContent_Declare(
-#   libnng
-#   GIT_REPOSITORY https://github.com/nanomsg/nng.git
-#   GIT_TAG        master
-# )
+if (WOLF_STREAM_HTTP)
+    message("fetching https://github.com/civetweb/civetweb.git")
+    FetchContent_Declare(
+        civetweb
+        GIT_REPOSITORY https://github.com/civetweb/civetweb.git
+        GIT_TAG        master
+    )
+    set(BUILD_TESTING OFF CACHE BOOL "BUILD_TESTING")
+    set(CIVETWEB_BUILD_TESTING OFF CACHE BOOL "CIVETWEB_BUILD_TESTING")
+    set(CIVETWEB_ENABLE_CXX ON CACHE BOOL "CIVETWEB_ENABLE_CXX")
+    set(CIVETWEB_ENABLE_ASAN OFF CACHE BOOL "CIVETWEB_ENABLE_ASAN")
 
-# change some options of CMAKE dependencies
-# set(EXPAT_SHARED_LIBS OFF CACHE BOOL "EXPAT_SHARED_LIBS")
-if (NOT EMSCRIPTEN)
-    FetchContent_Populate(catch2)
-endif()
-FetchContent_Populate(gsl)
+    FetchContent_MakeAvailable(civetweb)
 
-if (WOLF_SYSTEM_MIMALLOC)
-    FetchContent_MakeAvailable(
-        mimalloc-static)
-endif()
-if (WOLF_SYSTEM_EXECUTION)
-    FetchContent_MakeAvailable(unifex)
+    list(APPEND INCLUDES
+        ${civetweb_SOURCE_DIR}/include
+    )
+    link_directories(${civetweb_BINARY_DIR}/src/)
+    list(APPEND LIBS civetweb-cpp)
+    #add_definitions(-DOPENSSL_API_1_1 -DUSE_WEBSOCKET)
 endif()
 
 # enabling clang-tidy
@@ -196,17 +260,21 @@ endif()
 # https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/
 # can be enabled with .CLANG-TIDY from Visual Studio
 # https://devblogs.microsoft.com/cppblog/code-analysis-with-clang-tidy-in-visual-studio/
-set(CMAKE_CXX_CLANG_TIDY
-    clang-tidy;
-    -format-style=file;)  
+# set(CMAKE_CXX_CLANG_TIDY
+#     clang-tidy;
+#     -format-style=file;)  
 
 # add definitions
-if (MSVC)
+if (WIN32)
     add_definitions(
         -D_WIN32
         -DWIN32
+        -EHsc 
+        -DNOMINMAX
     )
     list(APPEND LIBS Onecore)
+elseif(APPLE)
+    add_definitions(-DNEED_XLOCALE_H=1)
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -227,41 +295,15 @@ endforeach()
 # include sources
 file(GLOB_RECURSE WOLF_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cppm"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cpp"
 )
-
-file(GLOB_RECURSE W_SYSTEM_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/system/gametime.cppm"
-    #"${CMAKE_CURRENT_SOURCE_DIR}/system/execution.cppm"
-    "${CMAKE_CURRENT_SOURCE_DIR}/system/system.cppm"
+file(GLOB_RECURSE WOLF_STREAM_WEBRTC_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/stream/http/*"
+    "${CMAKE_CURRENT_SOURCE_DIR}/stream/webrtc/*"
 )
-if (WOLF_SYSTEM_SOCKET)
-    file(GLOB_RECURSE W_NET_ASIO_SRC
-        "${CMAKE_CURRENT_SOURCE_DIR}/system/asio/*"
-    )
-endif()
-
-# add includes & libraries
-list(APPEND INCLUDES
-  ${boost_pool_SOURCE_DIR}/include
-  ${boost_preprocessor_SOURCE_DIR}/include
-if (NOT EMSCRIPTEN)
-  ${catch2_SOURCE_DIR}/single_include
-endif()
-  ${gsl_SOURCE_DIR}/include
+file(GLOB_RECURSE WOLF_SYSTEM_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/system/*"
 )
-
-if (WOLF_SYSTEM_MIMALLOC)
-    list(APPEND INCLUDES
-        ${mimalloc_static_SOURCE_DIR}/include
-    )
-endif()
-
-if (WOLF_SYSTEM_EXECUTION)
-    list(APPEND INCLUDES
-      ${unifex_SOURCE_DIR}/include
-    )
-endif()
 
 # includes
 include_directories(${INCLUDES})
@@ -269,27 +311,17 @@ include_directories(${INCLUDES})
 # add source codes
 add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
     ${WOLF_SRCS}
-    ${W_SYSTEM_SRC}
-    ${W_SYSTEM_ASIO_SRC}
+    ${WOLF_STREAM_WEBRTC_SRC}
+    ${WOLF_SYSTEM_SRC}
 )
-
-if (WOLF_SYSTEM_SOCKET)
-    add_library(${PROJECT_NAME} ${LIBRARY_TYPE}
-        ${W_SYSTEM_ASIO_SRC}
-    )
-endif()
 
 # link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
 
 # create source group
-source_group("wolf" FILES 
-    ${WOLF_SRCS}
-)
-if (WOLF_SYSTEM_SOCKET)
-    source_group("system/asio" FILES ${W_SYSTEM_ASIO_SRC})
-endif()
-source_group("system" FILES ${W_SYSTEM_SRC})
+source_group("wolf" FILES ${WOLF_SRCS})
+source_group("stream/webrtc" FILES ${WOLF_STREAM_WEBRTC_SRC})
+source_group("system" FILES ${WOLF_SYSTEM_SRC})
 
 # add compile options
 if (NOT MSVC)
@@ -297,12 +329,15 @@ if (NOT MSVC)
 endif()
 
 # build tests
-if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Android")
-  add_executable (${TEST_PROJECT_NAME} test.cpp)
-  target_link_libraries(${TEST_PROJECT_NAME} PRIVATE ${PROJECT_NAME} )
-  target_compile_options(${TEST_PROJECT_NAME} PRIVATE -Wall)
-  if (MSVC)
-    target_compile_options(${TEST_PROJECT_NAME} PRIVATE -std=c++2b)
-  endif()
-  #target_compile_definitions(${TEST_PROJECT_NAME} PRIVATE )
+if (WOLF_TESTS)
+    add_executable (${TEST_PROJECT_NAME} tests.cpp)
+    link_directories(${CMAKE_BINARY_DIR})
+    target_link_libraries(${TEST_PROJECT_NAME} PRIVATE ${PROJECT_NAME})
+    if (WOLF_SYSTEM_EXECUTION)
+        target_link_libraries(${TEST_PROJECT_NAME} PRIVATE unifex)
+    endif()
+    if (NOT EMSCRIPTEN)
+        target_link_libraries(${TEST_PROJECT_NAME} PRIVATE Threads::Threads)
+    endif()
+    target_compile_options(${TEST_PROJECT_NAME} PRIVATE -std=c++2b -Wall)
 endif()

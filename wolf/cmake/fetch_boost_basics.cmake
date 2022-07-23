@@ -125,12 +125,6 @@ message("fetching https://github.com/boostorg/optional.git")
     GIT_REPOSITORY https://github.com/boostorg/optional.git
     GIT_TAG        master
 )
-message("fetching https://github.com/boostorg/pool.git")
-    FetchContent_Declare(
-    boost_pool
-    GIT_REPOSITORY https://github.com/boostorg/pool.git
-    GIT_TAG        master
-)
 message("fetching https://github.com/boostorg/range.git")
     FetchContent_Declare(
     boost_range
