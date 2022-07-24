@@ -1,4 +1,3 @@
-
 #include "w_capturer_factory.hpp"
 #include "w_track_source.hpp"
 #include "w_vcm_capturer.hpp"
