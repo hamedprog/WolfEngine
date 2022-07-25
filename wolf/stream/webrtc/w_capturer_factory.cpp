@@ -128,54 +128,54 @@ static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> create_video_source
                                                                                  std::unique_ptr<webrtc::VideoDecoderFactory> &p_video_decoder_factory)
 {
     rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _video_source;
-    if (((p_video_url.find("rtsp://") == 0) || (p_video_url.find("rtsps://") == 0)) &&
-        (std::regex_match("rtsp://", p_publish_filter)))
-    {
-#ifdef HAVE_LIVE555
-        _video_source = w_track_source<RTSPVideoCapturer>::create(p_video_url, opts, p_video_decoder_factory);
-#endif
-    }
-    else if ((p_video_url.find("file://") == 0) && (std::regex_match("file://", p_publish_filter)))
-    {
-#ifdef HAVE_LIVE555
-        _video_source = w_track_source<FileVideoCapturer>::create(p_video_url, opts, p_video_decoder_factory);
-#endif
-    }
-    else if ((p_video_url.find("rtp://") == 0) && (std::regex_match("rtp://", p_publish_filter)))
-    {
-#ifdef HAVE_LIVE555
-        _video_source = w_track_source<RTPVideoCapturer>::create(SDPClient::getSdpFromRtpUrl(p_video_url), opts, p_video_decoder_factory);
-#endif
-    }
-    else if ((p_video_url.find("screen://") == 0) && (std::regex_match("screen://", p_publish_filter)))
-    {
-#ifdef USE_X11
-        _video_source = w_track_source<ScreenCapturer>::create(p_video_url, opts, p_video_decoder_factory);
-#endif
-    }
-    else if ((p_video_url.find("window://") == 0) && (std::regex_match("window://", p_publish_filter)))
-    {
-#ifdef USE_X11
-        _video_source = w_track_source<WindowCapturer>::create(p_video_url, opts, p_video_decoder_factory);
-#endif
-    }
-    else if ((p_video_url.find("rtmp://") == 0) && (std::regex_match("rtmp://", p_publish_filter)))
-    {
-#ifdef HAVE_RTMP
-        _video_source = w_track_source<RtmpVideoSource>::create(p_video_url, opts, p_video_decoder_factory);
-#endif
-    }
-    else if ((p_video_url.find("v4l2://") == 0) && (std::regex_match("v4l2://", p_publish_filter)))
-    {
-#ifdef HAVE_V4L2
-        _video_source = w_track_source<V4l2Capturer>::create(p_video_url, opts, p_video_decoder_factory);
-#endif
-    }
-    else if (std::regex_match("videocap://", p_publish_filter))
-    {
-        _video_source = wolf::stream::webRTC::w_track_source<w_vcm_capturer>::create(
-            p_video_url, p_opts, p_video_decoder_factory);
-    }
+    //     if (((p_video_url.find("rtsp://") == 0) || (p_video_url.find("rtsps://") == 0)) &&
+    //         (std::regex_match("rtsp://", p_publish_filter)))
+    //     {
+    // #ifdef HAVE_LIVE555
+    //         _video_source = w_track_source<RTSPVideoCapturer>::create(p_video_url, opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if ((p_video_url.find("file://") == 0) && (std::regex_match("file://", p_publish_filter)))
+    //     {
+    // #ifdef HAVE_LIVE555
+    //         _video_source = w_track_source<FileVideoCapturer>::create(p_video_url, opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if ((p_video_url.find("rtp://") == 0) && (std::regex_match("rtp://", p_publish_filter)))
+    //     {
+    // #ifdef HAVE_LIVE555
+    //         _video_source = w_track_source<RTPVideoCapturer>::create(SDPClient::getSdpFromRtpUrl(p_video_url), opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if ((p_video_url.find("screen://") == 0) && (std::regex_match("screen://", p_publish_filter)))
+    //     {
+    // #ifdef USE_X11
+    //         _video_source = w_track_source<ScreenCapturer>::create(p_video_url, opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if ((p_video_url.find("window://") == 0) && (std::regex_match("window://", p_publish_filter)))
+    //     {
+    // #ifdef USE_X11
+    //         _video_source = w_track_source<WindowCapturer>::create(p_video_url, opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if ((p_video_url.find("rtmp://") == 0) && (std::regex_match("rtmp://", p_publish_filter)))
+    //     {
+    // #ifdef HAVE_RTMP
+    //         _video_source = w_track_source<RtmpVideoSource>::create(p_video_url, opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if ((p_video_url.find("v4l2://") == 0) && (std::regex_match("v4l2://", p_publish_filter)))
+    //     {
+    // #ifdef HAVE_V4L2
+    //         _video_source = w_track_source<V4l2Capturer>::create(p_video_url, opts, p_video_decoder_factory);
+    // #endif
+    //     }
+    //     else if (std::regex_match("videocap://", p_publish_filter))
+    //     {
+    //         _video_source = wolf::stream::webRTC::w_track_source<w_vcm_capturer>::create(
+    //             p_video_url, p_opts, p_video_decoder_factory);
+    //     }
     return _video_source;
 }
 

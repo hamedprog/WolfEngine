@@ -1,22 +1,22 @@
-#include "w_set_session_des_obs.hpp"
+#include "w_set_session_desc_obs.hpp"
 #include <wolf.hpp>
 
-using w_set_session_des_obs = wolf::stream::webRTC::w_set_session_des_obs;
+using w_set_session_desc_obs = wolf::stream::webRTC::w_set_session_desc_obs;
 
-w_set_session_des_obs::w_set_session_des_obs(
+w_set_session_desc_obs::w_set_session_desc_obs(
     const rtc::scoped_refptr<webrtc::PeerConnectionInterface> &p_pc,
     std::promise<const webrtc::SessionDescriptionInterface *> &p_promise)
     : _pc(p_pc), _promise(p_promise){};
 
-w_set_session_des_obs *w_set_session_des_obs::create(
+w_set_session_desc_obs *w_set_session_desc_obs::create(
     const rtc::scoped_refptr<webrtc::PeerConnectionInterface> &p_pc,
     std::promise<const webrtc::SessionDescriptionInterface *> &p_promise)
 {
-    return new rtc::RefCountedObject<w_set_session_des_obs>(
+    return new rtc::RefCountedObject<w_set_session_desc_obs>(
         p_pc, p_promise);
 }
 
-void w_set_session_des_obs::OnSuccess()
+void w_set_session_desc_obs::OnSuccess()
 {
     std::string sdp;
     if (!this->_cancelled)
@@ -36,7 +36,7 @@ void w_set_session_des_obs::OnSuccess()
     }
 }
 
-void w_set_session_des_obs::OnFailure(webrtc::RTCError p_error)
+void w_set_session_desc_obs::OnFailure(webrtc::RTCError p_error)
 {
     W_UNUSED(p_error);
     // RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " " << error.message();
@@ -46,4 +46,4 @@ void w_set_session_des_obs::OnFailure(webrtc::RTCError p_error)
     }
 }
 
-void w_set_session_des_obs::cancel() { this->_cancelled = true; }
+void w_set_session_desc_obs::cancel() { this->_cancelled = true; }

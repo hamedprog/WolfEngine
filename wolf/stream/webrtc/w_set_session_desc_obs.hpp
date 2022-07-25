@@ -12,15 +12,15 @@
 
 namespace wolf::stream::webRTC
 {
-    class w_set_session_des_obs
+    class w_set_session_desc_obs
         : public webrtc::SetSessionDescriptionObserver
     {
     public:
-        static w_set_session_des_obs *create(
+        static w_set_session_desc_obs *create(
             const rtc::scoped_refptr<webrtc::PeerConnectionInterface> &p_pc,
             std::promise<const webrtc::SessionDescriptionInterface *> &p_promise);
 
-        w_set_session_des_obs(
+        w_set_session_desc_obs(
             const rtc::scoped_refptr<webrtc::PeerConnectionInterface> &p_pc,
             std::promise<const webrtc::SessionDescriptionInterface *> &p_promise);
 
