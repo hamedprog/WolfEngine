@@ -2,6 +2,7 @@
 #include "w_track_source.hpp"
 #include "w_vcm_capturer.hpp"
 #include "wolf.hpp"
+#include <modules/video_capture/video_capture_factory.h>
 
 using w_capturer_factory = wolf::stream::webRTC::w_capturer_factory;
 using w_vcm_capturer = wolf::stream::webRTC::w_vcm_capturer;

@@ -5,41 +5,25 @@
 
 #pragma once
 
+#include "DISABLE_ANALYSIS_BEGIN"
+
 #include <api/media_stream_interface.h>
 #include <api/scoped_refptr.h>
 #include <api/video/video_frame.h>
 
+#include "DISABLE_ANALYSIS_END"
+
 namespace wolf::stream::webRTC
 {
-  class w_video_sink : public rtc::VideoSinkInterface<webrtc::VideoFrame>
-  {
-  public:
-    w_video_sink(const rtc::scoped_refptr<webrtc::VideoTrackInterface> &p_track)
-        : _track(p_track)
+    class w_video_sink : public rtc::VideoSinkInterface<webrtc::VideoFrame>
     {
-      // RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " videotrack:" <<
-      // m_track->id();
-      this->_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
-    }
+    public:
+        w_video_sink(const rtc::scoped_refptr<webrtc::VideoTrackInterface>& p_track);
+        virtual ~w_video_sink();
 
-    virtual ~w_video_sink()
-    {
-      // RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " videotrack:" <<
-      // m_track->id();
-      this->_track->RemoveSink(this);
-    }
+        virtual void OnFrame(const webrtc::VideoFrame& p_video_frame);
 
-    // VideoSinkInterface implementation
-    virtual void OnFrame(const webrtc::VideoFrame &p_video_frame)
-    {
-      rtc::scoped_refptr<webrtc::I420BufferInterface> buffer(
-          p_video_frame.video_frame_buffer()->ToI420());
-      // RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << " frame:" <<
-      // buffer->width()
-      //                     << "x" << buffer->height();
-    }
-
-  protected:
-    rtc::scoped_refptr<webrtc::VideoTrackInterface> _track;
-  };
+    protected:
+        rtc::scoped_refptr<webrtc::VideoTrackInterface> _track;
+    };
 }

@@ -55,7 +55,7 @@ option(WOLF_TESTS "Enable tests" ON)
 # option(WOLF_STREAM_RTSP_CLIENT "Enable RTSP for client" OFF)
 # option(WOLF_STREAM_RTSP_SERVER "Enable RTSP for server" OFF)
 option(WOLF_STREAM_HTTP "Enable http 1.1/2 and websocket protocols" ON)
-option(WOLF_STREAM_WEBRTC "Enable webRTC" ON)
+option(WOLF_STREAM_WEBRTC "Enable native webRTC" ON)
 
 # system modules
 # option(WOLF_SYSTEM_AVX2 "Enable avx2" OFF)
@@ -66,7 +66,10 @@ option(WOLF_STREAM_WEBRTC "Enable webRTC" ON)
 # option(WOLF_SYSTEM_LZMA "Enable LZMA Compression" OFF)
 # option(WOLF_SYSTEM_MIMALLOC "Enable Microsoft mimalloc" OFF)
 # option(WOLF_SYSTEM_RAFT "Enable raft algorithm" OFF)
+
 option(WOLF_SYSTEM_EXECUTION "Enable the prototype implementation of the C++ sender/receiver async programming model based on libunifex" OFF)
+option(WOLF_SYSTEM_JSON "Enable json" ON)
+
 
 # set type of library
 set(LIBRARY_TYPE "SHARED" CACHE STRING "Library type")
@@ -77,6 +80,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  set(CMAKE_BUILD_TYPE "Debug")
+endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+
 find_package (Threads)
 
 if (MSVC)
@@ -166,18 +175,15 @@ endif()
 
 if (WOLF_STREAM_WEBRTC)
     # we need http api for webrtc
-    set(WOLF_STREAM_HTTP ON CACHE BOOL "WOLF_STREAM_HTTP")
-   
-    # link jsoncpp to webrtc
-    list(APPEND INCLUDES
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include
-    )
-    if (APPLE)
-        list(APPEND LIBS 
-            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/lib/mac/${CMAKE_BUILD_TYPE}/libjsoncpp.a
-        )
+
+    if (NOT WOLF_SYSTEM_JSON)
+        message( FATAL_ERROR "'WOLF_STREAM_WEBRTC' needs 'WOLF_SYSTEM_JSON'= ON" )
     endif()
 
+    if (NOT WOLF_STREAM_HTTP)
+        message( FATAL_ERROR "'WOLF_STREAM_WEBRTC' needs 'WOLF_STREAM_HTTP' = ON" )
+    endif()
+   
     list(APPEND INCLUDES
         ${WEBRTC_SRC}
         ${WEBRTC_SRC}/third_party/abseil-cpp
@@ -188,7 +194,7 @@ if (WOLF_STREAM_WEBRTC)
             -DWEBRTC_WIN 
             -D__PRETTY_FUNCTION__=__FUNCTION__ 
             -D_HAS_ITERATOR_DEBUGGING=0
-            -DUSE_X11 
+            #-DUSE_X11 
             -DHAVE_SOUND 
             -D_WINSOCKAPI_)
 
@@ -255,6 +261,42 @@ if (WOLF_STREAM_HTTP)
     #add_definitions(-DOPENSSL_API_1_1 -DUSE_WEBSOCKET)
 endif()
 
+if (WOLF_SYSTEM_JSON)
+    #if (MSVC)
+    message("fetching https://github.com/open-source-parsers/jsoncpp.git")
+    FetchContent_Declare(
+        jsoncpp_static
+        GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp.git
+        GIT_TAG        master
+    )
+
+    set(BUILD_OBJECT_LIBS OFF CACHE BOOL "BUILD_OBJECT_LIBS")        
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "BUILD_SHARED_LIBS")
+    set(BUILD_TESTING OFF CACHE BOOL "BUILD_TESTING")
+    set(JSONCPP_USE_SECURE_MEMORY ON CACHE BOOL "JSONCPP_USE_SECURE_MEMORY")
+    set(JSONCPP_WITH_EXAMPLE OFF CACHE BOOL "JSONCPP_WITH_EXAMPLE")
+    set(JSONCPP_WITH_TESTS OFF CACHE BOOL "JSONCPP_WITH_TESTS")
+    set(JSONCPP_WITH_POST_BUILD_UNITEST OFF CACHE BOOL "JSONCPP_WITH_POST_BUILD_UNITEST")
+
+    FetchContent_MakeAvailable(jsoncpp_static)
+
+    list(APPEND INCLUDES
+        ${jsoncpp_static_SOURCE_DIR}/include
+    )
+    list(APPEND LIBS jsoncpp_static)
+    #else()
+    #    # link jsoncpp to webrtc
+    #    list(APPEND INCLUDES
+    #        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include
+    #    )
+    #    if (APPLE)
+    #        list(APPEND LIBS 
+    #            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/lib/mac/${CMAKE_BUILD_TYPE}/libjsoncpp.a
+    #        )
+    #    endif()
+    #endif()
+endif()
+
 # enabling clang-tidy
 # can be enabled with .CLANG-TIDY from Visual Studio Code
 # https://devblogs.microsoft.com/cppblog/visual-studio-code-c-december-2021-update-clang-tidy/
@@ -265,20 +307,22 @@ endif()
 #     -format-style=file;)  
 
 # add definitions
-if (WIN32)
+if (MSVC)
     add_definitions(
-        -D_WIN32
-        -DWIN32
         -EHsc 
         -DNOMINMAX
     )
-    list(APPEND LIBS Onecore)
+    if (WIN64)
+        add_definitions(-DWIN64)
+    else()
+        add_definitions(-DWIN32)
+    endif()
 elseif(APPLE)
     add_definitions(-DNEED_XLOCALE_H=1)
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    add_definitions(-DDEBUG)
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DDEBUG -D_DEBUG)
 else()
     add_definitions(-DNDEBUG)
 endif()
@@ -294,8 +338,11 @@ endforeach()
 
 # include sources
 file(GLOB_RECURSE WOLF_SRCS
+    "${CMAKE_CURRENT_SOURCE_DIR}/dllmain.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/wolf.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/DISABLE_ANALYSIS_BEGIN"
+    "${CMAKE_CURRENT_SOURCE_DIR}/DISABLE_ANALYSIS_END"
 )
 file(GLOB_RECURSE WOLF_STREAM_WEBRTC_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/stream/http/*"
@@ -324,9 +371,10 @@ source_group("stream/webrtc" FILES ${WOLF_STREAM_WEBRTC_SRC})
 source_group("system" FILES ${WOLF_SYSTEM_SRC})
 
 # add compile options
-if (NOT MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE -std=c++2b -fPIC -Wall)
+if (NOT WIN32)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)
 endif()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
 
 # build tests
 if (WOLF_TESTS)

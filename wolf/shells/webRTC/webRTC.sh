@@ -21,7 +21,7 @@ fi
 
 if [ $1 = "ios" ]; then
     # Compile version without certificate
-    gn gen out/ios_$build_type --args='target_os="ios" target_cpu="arm64" is_debug=$is_debug use_rtti=true is_component_build=false ios_enable_code_signing=false proprietary_codecs=false rtc_use_h264=false rtc_include_tests=false' --ide=xcode
+    gn gen out/ios_$build_type --args='target_os="ios" target_cpu="arm64" is_debug=$is_debug use_rtti=true is_component_build=false ios_enable_code_signing=false proprietary_codecs=false rtc_include_tests=false' --ide=xcode
     ninja -C out/ios_$build_type
 
     # Compile version with certificate
@@ -34,6 +34,8 @@ if [ $1 = "ios" ]; then
     # ninja -C out/ios_$build_type_sign
 else
     # mac & linux
-    gn gen out/$build_type --args='target_os="$1" target_cpu="x64" is_debug=$is_debug use_rtti=true is_component_build=false rtc_use_h264=false rtc_include_tests=false use_custom_libcxx=false use_custom_libcxx_for_host=false' --ide=xcode
+    gn gen out/$build_type --args='target_os="$1" target_cpu="x64" is_debug=$is_debug use_rtti=true is_component_build=false rtc_include_tests=false use_custom_libcxx=false use_custom_libcxx_for_host=false' --ide=xcode
     ninja -C out/$build_type
 fi
+
+
