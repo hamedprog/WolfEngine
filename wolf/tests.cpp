@@ -3,7 +3,7 @@
 
 //#include <stream/http/w_http_server.hpp>
 ////#include <stream/webrtc/w_desktop_capturer.hpp>
-#include <stream/webrtc/w_video_source.hpp>
+//#include <stream/webrtc/w_video_source.hpp>
 ////#include <system/w_task.hpp>
 //#include <wolf.hpp>
 
@@ -26,8 +26,8 @@ TEST_CASE("wolf", "version") {
 
 #ifdef WOLF_STREAM_WEBRTC
 TEST_CASE("wolf:stream", "webRTC") {
-  using namespace wolf::stream;
-  auto a = webRTC::w_video_source();
+  // using namespace wolf::stream;
+  // auto a = webRTC::w_video_source();
 
   //auto funcs = std::map<std::string, http::w_http_function>();
   //auto options = std::vector<std::string>();

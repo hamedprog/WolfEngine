@@ -8,7 +8,7 @@ using w_capturer_factory = wolf::stream::webRTC::w_capturer_factory;
 using w_vcm_capturer = wolf::stream::webRTC::w_vcm_capturer;
 
 const std::list<std::string> w_capturer_factory::get_video_capture_device_list(
-    const std::regex& p_publish_filter,
+    const std::regex &p_publish_filter,
     bool p_use_null_codec)
 {
     std::list<std::string> _video_device_list;
@@ -21,23 +21,23 @@ const std::list<std::string> w_capturer_factory::get_video_capture_device_list(
             auto _num_video_devices = _info->NumberOfDevices();
             for (uint32_t i = 0; i < _num_video_devices; ++i)
             {
-                std::array<char, W_MAX_PATH> _name = { 0 };
-                std::array<char, W_MAX_PATH> _id = { 0 };
+                std::array<char, W_MAX_PATH> _name = {0};
+                std::array<char, W_MAX_PATH> _id = {0};
 
                 if (_info->GetDeviceName(
-                    i,
-                    _name.data(),
-                    W_MAX_PATH,
-                    _id.data(),
-                    W_MAX_PATH) != -1)
+                        i,
+                        _name.data(),
+                        W_MAX_PATH,
+                        _id.data(),
+                        W_MAX_PATH) != -1)
                 {
                     std::string _dev_name;
                     auto _it = std::find(_video_device_list.begin(),
-                        _video_device_list.end(),
-                        _name.data());
+                                         _video_device_list.end(),
+                                         _name.data());
                     if (_it == _video_device_list.end())
                     {
-                        _dev_name = std::move(std::string(_name.data()));
+                        _dev_name = std::string(_name.data());
                     }
                     else
                     {
@@ -52,10 +52,10 @@ const std::list<std::string> w_capturer_factory::get_video_capture_device_list(
     if (std::regex_match("v4l2://", p_publish_filter) && p_use_null_codec)
     {
 #ifdef HAVE_V4L2
-        DIR* dir = opendir("/dev");
+        DIR *dir = opendir("/dev");
         if (dir != nullptr)
         {
-            struct dirent* entry = NULL;
+            struct dirent *entry = NULL;
             while ((entry = readdir(dir)) != NULL)
             {
                 if (strncmp(entry->d_name, "video", 5) == 0)
@@ -63,7 +63,7 @@ const std::list<std::string> w_capturer_factory::get_video_capture_device_list(
                     std::string device("/dev/");
                     device.append(entry->d_name);
                     V4L2DeviceParameters param(device.c_str(), V4L2_PIX_FMT_H264, 0, 0, 0);
-                    V4l2Capture* capture = V4l2Capture::create(param);
+                    V4l2Capture *capture = V4l2Capture::create(param);
                     if (capture != NULL)
                     {
                         delete capture;
@@ -82,7 +82,7 @@ const std::list<std::string> w_capturer_factory::get_video_capture_device_list(
 }
 
 const std::list<std::string> w_capturer_factory::get_video_source_list(
-    const std::regex& p_publish_filter,
+    const std::regex &p_publish_filter,
     bool p_use_null_codec)
 {
     std::list<std::string> _video_list;
@@ -127,9 +127,9 @@ const std::list<std::string> w_capturer_factory::get_video_source_list(
 }
 
 rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> w_capturer_factory::create_video_source(
-    const std::string& p_video_url,
-    const std::map<std::string, std::string>& p_opts,
-    const std::regex& p_publish_filter,
+    const std::string &p_video_url,
+    const std::map<std::string, std::string> &p_opts,
+    const std::regex &p_publish_filter,
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> p_peer_connection_factory)
 {
     rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _video_source;
@@ -180,7 +180,7 @@ rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> w_capturer_factory::create
     else if (std::regex_match("videocap://", p_publish_filter))
     {
         _video_source = wolf::stream::webRTC::w_track_source<w_vcm_capturer>::create(
-            p_video_url, 
+            p_video_url,
             p_opts);
     }
 
@@ -188,9 +188,9 @@ rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> w_capturer_factory::create
 }
 
 rtc::scoped_refptr<webrtc::AudioSourceInterface> w_capturer_factory::create_audio_source(
-    const std::string& p_audio_url,
-    const std::map<std::string, std::string>& p_opts,
-    const std::regex& p_publish_filter,
+    const std::string &p_audio_url,
+    const std::map<std::string, std::string> &p_opts,
+    const std::regex &p_publish_filter,
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> p_peer_connection_factory,
     rtc::scoped_refptr<webrtc::AudioDecoderFactory> p_audio_decoderf_factory,
     rtc::scoped_refptr<webrtc::AudioDeviceModule> p_audio_device_module)
@@ -218,8 +218,8 @@ rtc::scoped_refptr<webrtc::AudioSourceInterface> w_capturer_factory::create_audi
         const auto _num_audio_devices = p_audio_device_module->RecordingDevices();
         auto _idx_audio_device = -1;
 
-        std::array<char, W_MAX_PATH> _name = { 0 };
-        std::array<char, W_MAX_PATH> _id = { 0 };
+        std::array<char, W_MAX_PATH> _name = {0};
+        std::array<char, W_MAX_PATH> _id = {0};
 
         if (p_audio_url.find("audiocap://") == 0)
         {
@@ -255,7 +255,7 @@ rtc::scoped_refptr<webrtc::AudioSourceInterface> w_capturer_factory::create_audi
 }
 
 const std::list<std::string> w_capturer_factory::get_audio_capture_device_list(
-    const std::regex& p_publish_filter,
+    const std::regex &p_publish_filter,
     rtc::scoped_refptr<webrtc::AudioDeviceModule> p_audio_device_module)
 {
     std::list<std::string> _audio_list;
@@ -264,8 +264,8 @@ const std::list<std::string> w_capturer_factory::get_audio_capture_device_list(
         const auto _num_audio_devices = p_audio_device_module->RecordingDevices();
         for (auto i = 0; i < _num_audio_devices; ++i)
         {
-            std::array<char, W_MAX_PATH> _name = { 0 };
-            std::array<char, W_MAX_PATH> _id = { 0 };
+            std::array<char, W_MAX_PATH> _name = {0};
+            std::array<char, W_MAX_PATH> _id = {0};
             if (p_audio_device_module->RecordingDeviceName(i, _name.data(), _id.data()) != -1)
             {
                 // RTC_LOG(LS_INFO) << "audio device name:" << name << " id:" << id;
@@ -273,7 +273,7 @@ const std::list<std::string> w_capturer_factory::get_audio_capture_device_list(
                 auto it = std::find(_audio_list.begin(), _audio_list.end(), _name.data());
                 if (it == _audio_list.end())
                 {
-                    _dev_name = std::move(std::string(_name.data()));
+                    _dev_name = std::string(_name.data());
                 }
                 else
                 {

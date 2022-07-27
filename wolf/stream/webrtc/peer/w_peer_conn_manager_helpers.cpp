@@ -7,13 +7,17 @@
 #include <stream/webrtc/media/w_video_decoder_factory_null_codec.hpp>
 
 #ifdef WIN64
+
 #ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #endif
 #include <WinSock2.h>
+
 #else
+
 #include <net/if.h>
 #include <ifaddrs.h>
+
 #endif
 
 using w_ice_server = wolf::stream::webRTC::w_ice_server;
@@ -28,27 +32,27 @@ std::string w_peer_conn_manager_helpers::get_server_ip_from_client_ip(int p_clie
 #else
     std::string server_address;
     char host[NI_MAXHOST];
-    ifaddrs* ifaddr = nullptr;
+    ifaddrs *ifaddr = nullptr;
     if (getifaddrs(&ifaddr) == 0)
     {
-        for (ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
+        for (ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
         {
             if ((ifa->ifa_netmask != nullptr) &&
                 (ifa->ifa_netmask->sa_family == AF_INET) &&
                 (ifa->ifa_addr != nullptr) &&
                 (ifa->ifa_addr->sa_family == AF_INET))
             {
-                sockaddr_in* addr = (sockaddr_in*)ifa->ifa_addr;
-                sockaddr_in* mask = (sockaddr_in*)ifa->ifa_netmask;
+                sockaddr_in *addr = (sockaddr_in *)ifa->ifa_addr;
+                sockaddr_in *mask = (sockaddr_in *)ifa->ifa_netmask;
                 if ((addr->sin_addr.s_addr & mask->sin_addr.s_addr) == (p_client_ip & mask->sin_addr.s_addr))
                 {
                     if (getnameinfo(ifa->ifa_addr,
-                        sizeof(sockaddr_in),
-                        host,
-                        sizeof(host),
-                        nullptr,
-                        0,
-                        NI_NUMERICHOST) == 0)
+                                    sizeof(sockaddr_in),
+                                    host,
+                                    sizeof(host),
+                                    nullptr,
+                                    0,
+                                    NI_NUMERICHOST) == 0)
                     {
                         server_address = host;
                         break;
@@ -63,8 +67,8 @@ std::string w_peer_conn_manager_helpers::get_server_ip_from_client_ip(int p_clie
 }
 
 w_ice_server w_peer_conn_manager_helpers::get_ice_server_from_url(
-    const std::string& p_url,
-    const std::string& p_client_ip)
+    const std::string &p_url,
+    const std::string &p_client_ip)
 {
     w_ice_server _srv;
     _srv.url = p_url;
@@ -112,14 +116,10 @@ w_ice_server w_peer_conn_manager_helpers::get_ice_server_from_url(
 
 std::unique_ptr<webrtc::VideoEncoderFactory> w_peer_conn_manager_helpers::create_encoder_factory(bool p_use_null_codec)
 {
-    return p_use_null_codec ?
-        std::make_unique<w_video_encoder_factory_null_codec>() :
-        webrtc::CreateBuiltinVideoEncoderFactory();
+    return p_use_null_codec ? std::make_unique<w_video_encoder_factory_null_codec>() : webrtc::CreateBuiltinVideoEncoderFactory();
 }
 
 std::unique_ptr<webrtc::VideoDecoderFactory> w_peer_conn_manager_helpers::create_decoder_factory(bool p_use_null_codec)
 {
-    return p_use_null_codec ?
-        std::make_unique<w_video_decoder_factory_null_codec>() :
-        webrtc::CreateBuiltinVideoDecoderFactory();
+    return p_use_null_codec ? std::make_unique<w_video_decoder_factory_null_codec>() : webrtc::CreateBuiltinVideoDecoderFactory();
 }

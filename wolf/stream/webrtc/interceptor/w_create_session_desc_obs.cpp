@@ -24,9 +24,9 @@ void w_create_session_desc_obs::OnSuccess(webrtc::SessionDescriptionInterface* p
 
 	if (!this->_cancelled)
 	{
-		auto* _session = wolf::stream::webRTC::w_create_session_desc_obs::create(
-			this->_pc,
-			this->_promise);
+		// auto* _session = wolf::stream::webRTC::w_create_session_desc_obs::create(
+		// 	this->_pc,
+		// 	this->_promise);
 	}
 }
 

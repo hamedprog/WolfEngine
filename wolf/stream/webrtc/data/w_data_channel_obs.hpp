@@ -18,11 +18,11 @@ namespace wolf::stream::webRTC
 	{
 	public:
 		w_data_channel_obs(rtc::scoped_refptr<webrtc::DataChannelInterface>
-			p_data_channel);
+							   p_data_channel);
 		virtual ~w_data_channel_obs();
 
 		void OnStateChange() override;
-		void OnMessage(const webrtc::DataBuffer& p_buffer);
+		void OnMessage(const webrtc::DataBuffer &p_buffer) override;
 
 	protected:
 		rtc::scoped_refptr<webrtc::DataChannelInterface> _data_channel;
