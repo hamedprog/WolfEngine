@@ -38,7 +38,8 @@ namespace wolf::system
 
         void set_target_elapsed_secs(double p_value) noexcept;
 
-        template <typename F> void tick(F&& p_tick_function)
+        template <typename F> 
+        void tick(F&& p_tick_function)
         {
             using namespace std::chrono;
 
