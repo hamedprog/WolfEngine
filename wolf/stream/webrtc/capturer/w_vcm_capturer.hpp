@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <wolf.hpp>
 #include <map>
 #include <stream/webrtc/media/w_video_source.hpp>
 
@@ -23,20 +24,20 @@ namespace wolf::stream::webRTC
 		w_vcm_capturer() = default;
 		virtual ~w_vcm_capturer();
 
-		void OnFrame(const webrtc::VideoFrame& frame) override;
+		void OnFrame(const webrtc::VideoFrame &frame) override;
 
 		size_t get_width() const noexcept;
 		size_t get_height() const noexcept;
 
-		static w_vcm_capturer* create(
-			const std::string& p_video_url,
-			const std::map<std::string, std::string>& p_opts);
+		static w_vcm_capturer *create(
+			const std::string &p_video_url,
+			const std::map<std::string, std::string> &p_opts);
 
 	private:
 		bool init(size_t p_width,
-			size_t p_height,
-			size_t p_target_fps,
-			const std::string& p_video_url);
+				  size_t p_height,
+				  size_t p_target_fps,
+				  const std::string &p_video_url);
 		void fini();
 
 		size_t _width = 0;

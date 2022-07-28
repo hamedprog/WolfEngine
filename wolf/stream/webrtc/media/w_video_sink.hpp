@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <wolf.hpp>
+
 #include "DISABLE_ANALYSIS_BEGIN"
 
 #include <api/media_stream_interface.h>

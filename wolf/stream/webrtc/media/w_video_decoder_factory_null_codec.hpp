@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <wolf.hpp>
 #include <vector>
 #include <memory>
 

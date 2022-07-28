@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <wolf.hpp>
+
 #include "DISABLE_ANALYSIS_BEGIN"
 
 #include <api/scoped_refptr.h>

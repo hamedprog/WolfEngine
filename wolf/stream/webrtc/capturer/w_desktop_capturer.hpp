@@ -5,10 +5,16 @@
 
 #pragma once
 
+#include <wolf.hpp>
+#include <thread>
+
+#include "DISABLE_ANALYSIS_BEGIN"
+
 #include <stream/webrtc/media/w_video_source.hpp>
 #include <memory>
 #include <modules/desktop_capture/desktop_capturer.h>
-#include <thread>
+
+#include "DISABLE_ANALYSIS_END"
 
 namespace wolf::stream::webRTC
 {
@@ -18,10 +24,10 @@ namespace wolf::stream::webRTC
         w_desktop_capturer(uint32_t p_width = 0, uint32_t p_height = 0);
 
         // prevent copy constructor
-        w_desktop_capturer(const w_desktop_capturer&) = delete;
+        w_desktop_capturer(const w_desktop_capturer &) = delete;
 
         // prevent copying
-        w_desktop_capturer& operator=(const w_desktop_capturer&) = delete;
+        w_desktop_capturer &operator=(const w_desktop_capturer &) = delete;
 
         // destructor
         virtual ~w_desktop_capturer();
@@ -55,7 +61,7 @@ namespace wolf::stream::webRTC
          * overide webrtc::DesktopCapturer::Callback
          */
         void OnCaptureResult(webrtc::DesktopCapturer::Result p_result,
-            std::unique_ptr<webrtc::DesktopFrame> p_frame) override;
+                             std::unique_ptr<webrtc::DesktopFrame> p_frame) override;
 
     private:
         std::thread capture_thread_;

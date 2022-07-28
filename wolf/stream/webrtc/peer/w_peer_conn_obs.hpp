@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <wolf.hpp>
 #include <chrono>
 #include <stream/webrtc/media/w_audio_sink.hpp>
 #include <stream/webrtc/data/w_data_channel_obs.hpp>

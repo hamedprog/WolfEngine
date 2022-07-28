@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <wolf.hpp>
 #include <regex>
 #include "w_vcm_capturer.hpp"
 
@@ -43,29 +44,29 @@ namespace wolf::stream::webRTC
     {
     public:
         static const std::list<std::string> get_video_capture_device_list(
-            const std::regex& p_publish_filter,
+            const std::regex &p_publish_filter,
             bool p_use_null_codec);
 
         static const std::list<std::string> get_video_source_list(
-            const std::regex& p_publish_filter,
+            const std::regex &p_publish_filter,
             bool p_use_null_codec);
 
         static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> create_video_source(
-            const std::string& p_video_url,
-            const std::map<std::string, std::string>& p_opts,
-            const std::regex& p_publish_filter,
+            const std::string &p_video_url,
+            const std::map<std::string, std::string> &p_opts,
+            const std::regex &p_publish_filter,
             rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> p_peer_connection_factory);
 
         static rtc::scoped_refptr<webrtc::AudioSourceInterface> create_audio_source(
-            const std::string& p_audio_url,
-            const std::map<std::string, std::string>& p_opts,
-            const std::regex& p_publish_filter,
+            const std::string &p_audio_url,
+            const std::map<std::string, std::string> &p_opts,
+            const std::regex &p_publish_filter,
             rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> p_peer_connection_factory,
             rtc::scoped_refptr<webrtc::AudioDecoderFactory> p_audio_decoder_factory,
             rtc::scoped_refptr<webrtc::AudioDeviceModule> p_audio_device_module);
-    
+
         static const std::list<std::string> get_audio_capture_device_list(
-            const std::regex& p_publish_filter,
+            const std::regex &p_publish_filter,
             rtc::scoped_refptr<webrtc::AudioDeviceModule> p_audio_device_module);
     };
 } // namespace wolf::stream::webRTC

@@ -1,18 +1,18 @@
 #include "w_peer_conn_manager.hpp"
 #include "w_peer_conn_manager_helpers.hpp"
 
+#include <stream/webrtc/media/w_v4l2_alsa_map.hpp>
+
 #include "DISABLE_ANALYSIS_BEGIN"
 
 #include <api/task_queue/default_task_queue_factory.h>
 #include <api/audio_codecs/builtin_audio_decoder_factory.h>
+#include <modules/audio_device/include/fake_audio_device.h>
 
 #include "DISABLE_ANALYSIS_END"
 
-//#include "api/audio_codecs/builtin_audio_encoder_factory.h"
 
-//#include "api/rtc_event_log/rtc_event_log_factory.h"
 
-//#include "media/engine/webrtc_media_engine.h"
 //#include "modules/audio_device/include/fake_audio_device.h"
 //#include "w_ice_server.hpp"
 //#include "w_video_decoder_factory_null_codec.hpp"
@@ -27,7 +27,7 @@
 //#include "w_set_session_desc_obs.hpp"
 //#include "w_create_session_desc_obs.hpp"
 //
-//// #include "V4l2AlsaMap.h"
+
 //#include "w_capturer_factory.hpp"
 
 // #include "NullEncoder.h"
@@ -35,53 +35,19 @@
 
 using w_peer_conn_manager = wolf::stream::webRTC::w_peer_conn_manager;
 
-//using w_http_function = wolf::stream::http::w_http_function;
-//using w_peer_conn_obs = wolf::stream::webRTC::w_peer_conn_obs;
-//using w_set_session_des_obs = wolf::stream::webRTC::w_set_session_desc_obs;
-//using w_create_session_desc_obs = wolf::stream::webRTC::w_create_session_desc_obs;
-//
-//// Names used for a IceCandidate JSON object.
-//constexpr char s_candidate_sdp_midname[] = "sdpMid";
-//constexpr char s_candidate_sdp_mline_index_name[] = "sdpMLineIndex";
-//constexpr char s_candidate_sdp_name[] = "candidate";
+// using w_http_function = wolf::stream::http::w_http_function;
+// using w_peer_conn_obs = wolf::stream::webRTC::w_peer_conn_obs;
+// using w_set_session_des_obs = wolf::stream::webRTC::w_set_session_desc_obs;
+// using w_create_session_desc_obs = wolf::stream::webRTC::w_create_session_desc_obs;
+
 //
 //// Names used for a SessionDescription JSON object.
-//constexpr char s_session_desc_type_name[] = "type";
-//constexpr char s_session_desc_sdp_name[] = "sdp";
-
-//webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(
-//    rtc::Thread *p_signaling_thread,
-//    rtc::Thread *p_worker_thread,
-//    rtc::scoped_refptr<webrtc::AudioDeviceModule> p_audio_device_module,
-//    rtc::scoped_refptr<webrtc::AudioDecoderFactory> p_audio_decoder_factory,
-//    bool p_use_null_codec)
-//{
-//    webrtc::PeerConnectionFactoryDependencies peer_factory_deps = {};
-//    peer_factory_deps.network_thread = NULL;
-//    peer_factory_deps.worker_thread = p_worker_thread;
-//    peer_factory_deps.signaling_thread = p_signaling_thread;
-//    peer_factory_deps.call_factory = webrtc::CreateCallFactory();
-//    peer_factory_deps.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
-//    peer_factory_deps.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>(peer_factory_deps.task_queue_factory.get());
-//
-//    cricket::MediaEngineDependencies media_dependencies;
-//    media_dependencies.task_queue_factory = peer_factory_deps.task_queue_factory.get();
-//    media_dependencies.adm = std::move(p_audio_device_module);
-//    media_dependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
-//    media_dependencies.audio_decoder_factory = std::move(p_audio_decoder_factory);
-//    media_dependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
-//
-//    media_dependencies.video_encoder_factory = s_create_encoder_factory(p_use_null_codec);
-//    media_dependencies.video_decoder_factory = s_create_decoder_factory(p_use_null_codec);
-//
-//    peer_factory_deps.media_engine = cricket::CreateMediaEngine(std::move(media_dependencies));
-//
-//    return peer_factory_deps;
-//}
+// constexpr char s_session_desc_type_name[] = "type";
+// constexpr char s_session_desc_sdp_name[] = "sdp";
 
 w_peer_conn_manager::w_peer_conn_manager(
     const std::list<std::string> &p_ice_server_list,
-    const rapidjson::Value& p_config,
+    const rapidjson::Value &p_config,
     webrtc::AudioDeviceModule::AudioLayer p_audio_layer,
     const std::string &p_publish_filter,
     const std::string &p_webrtc_udp_port_range,
@@ -100,21 +66,29 @@ w_peer_conn_manager::w_peer_conn_manager(
                     _use_plan_b(p_use_plan_b),
                     _max_pc(p_max_pc)
 {
-    //this->_worker_thread->SetName("worker", NULL);
-    //this->_worker_thread->Start();
+    this->_worker_thread->SetName("worker", nullptr);
+    this->_worker_thread->Start();
 
-    // this->_worker_thread->Invoke<void>(RTC_FROM_HERE,
-    //                                    [this, p_audio_layer]
-    //                                    { this->createAudioModule(p_audio_layer); });
+    this->_worker_thread->Invoke<void>(RTC_FROM_HERE, [this, p_audio_layer] 
+    { 
+        create_audio_module(p_audio_layer); 
+    });
 
-    // this->_signaling_thread->SetName("signaling", NULL);
-    // this->_signaling_thread->Start();
-    // m_peer_connection_factory = webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_signalingThread.get(), m_workerThread.get(), m_audioDeviceModule, m_audioDecoderfactory, useNullCodec));
+    this->_signaling_thread->SetName("signaling", nullptr);
+    this->_signaling_thread->Start();
+    this->_peer_conn_factory = webrtc::CreateModularPeerConnectionFactory(
+        w_peer_conn_manager_helpers::create_peer_conn_factory_deps(
+            this->_signaling_thread.get(), 
+            this->_worker_thread.get(), 
+            this->_audio_device_module, 
+            this->_audio_decoder_factory, 
+            p_use_null_codec)
+        );
 
-    // // build video audio map
-    // m_videoaudiomap = getV4l2AlsaMap();
+    // build video audio map
+    this->_video_audio_map = get_v4l2_alsa_map();
 
-    // // register api in http server
+    // register api in http server
     // m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string, std::string>, Json::Value>
     // {
     //     return std::make_pair(std::map<std::string, std::string>(), this->getMediaList());
@@ -253,329 +227,394 @@ w_peer_conn_manager::w_peer_conn_manager(
 
 w_peer_conn_manager::~w_peer_conn_manager()
 {
-    /*this->_worker_thread->Invoke<void>(
+    this->_worker_thread->Invoke<void>(
         RTC_FROM_HERE, [this]
-        { this->_audio_device_module->Release(); });*/
+        { 
+            this->_audio_device_module->Release(); 
+        });
 }
 
-//
-//const Json::Value w_peer_conn_manager::hang_up(const std::string &p_peer_id)
+void w_peer_conn_manager::create_audio_module(webrtc::AudioDeviceModule::AudioLayer p_audio_layer)
+{
+#ifdef HAVE_SOUND
+    this->_audio_device_module = webrtc::AudioDeviceModule::Create(
+        p_audio_layer, 
+        this->_task_queue_factory.get());
+    if (this->_audio_device_module->Init() != 0)
+    {
+        this->_audio_device_module = new webrtc::FakeAudioDeviceModule();
+    }
+#else
+    this->_audio_device_module = new webrtc::FakeAudioDeviceModule();
+#endif
+}
+
+const rapidjson::Value w_peer_conn_manager::add_ice_candidate(
+    const std::string &p_peer_id,
+    const rapidjson::Value &p_jmessage)
+{
+    bool _result = false;
+    // int _sdp_line_index = 0;
+    // std::string _sdp_mid, _sdp;
+
+    // p_jmessage.GetInt("sdpMLineIndex", &_sdp_line_index);
+    // p_jmessage.GetString("sdpMid", &_sdp_mid);
+    // p_jmessage.GetString("candidate", &_sdp);
+
+    // if (!_sdp_line_index || _sdp_mid.empty() || _sdp.empty())
+    // {
+    //     //RTC_LOG(LS_WARNING) << "Can't parse received message:" << jmessage;
+    // }
+    // else
+    // {
+    //     std::unique_ptr<webrtc::IceCandidateInterface> _candidate(
+    //         webrtc::CreateIceCandidate(_sdp_mid, _sdp_line_index, _sdp, nullptr));
+    //     if (_candidate.get() == nullptr)
+    //     {
+    //         //RTC_LOG(LS_WARNING) << "Can't parse received candidate message.";
+    //     }
+    //     else
+    //     {
+    //         std::lock_guard<std::mutex> peer_lock(this->_peer_map_mutex);
+    //         rtc::scoped_refptr<webrtc::PeerConnectionInterface> _peer_conn = this->getPeerConnection(p_peer_id);
+    //         if (_peer_conn)
+    //         {
+    //             if (!_peer_conn->AddIceCandidate(_candidate.get()))
+    //             {
+    //                 //RTC_LOG(LS_WARNING) << "Failed to apply the received candidate";
+    //             }
+    //             else
+    //             {
+    //                 _result = true;
+    //             }
+    //         }
+    //     }
+    // }
+    rapidjson::Value answer;
+    if (_result)
+    {
+        answer.SetBool(true);
+    }
+    return answer;
+}
+
+// const Json::Value w_peer_conn_manager::hang_up(const std::string &p_peer_id)
 //{
-//    bool result = false;
-//    // RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid;
+//     bool result = false;
+//     // RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid;
 //
-//    w_peer_conn_obs *_pc_observer = nullptr;
-//    {
-//        std::lock_guard<std::mutex> peerlock(this->_peer_map_mutex);
-//        auto it = this->_peer_conn_obs_map.find(p_peer_id);
-//        if (it != this->_peer_conn_obs_map.end())
-//        {
-//            _pc_observer = it->second;
-//            // RTC_LOG(LS_ERROR) << "Remove PeerConnection peerid:" << peerid;
-//            this->_peer_conn_obs_map.erase(it);
-//        }
+//     w_peer_conn_obs *_pc_observer = nullptr;
+//     {
+//         std::lock_guard<std::mutex> peerlock(this->_peer_map_mutex);
+//         auto it = this->_peer_conn_obs_map.find(p_peer_id);
+//         if (it != this->_peer_conn_obs_map.end())
+//         {
+//             _pc_observer = it->second;
+//             // RTC_LOG(LS_ERROR) << "Remove PeerConnection peerid:" << peerid;
+//             this->_peer_conn_obs_map.erase(it);
+//         }
 //
-//        if (_pc_observer)
-//        {
-//            auto _peer_conn = _pc_observer->get_peer_conn();
-//            auto _local_streams = _peer_conn->GetSenders();
-//            for (auto stream : _local_streams)
-//            {
-//                auto stream_vector = stream->stream_ids();
-//                if (stream_vector.size() > 0)
-//                {
-//                    auto _stream_label = stream_vector[0];
-//                    bool _still_used = stream_still_used(_stream_label);
-//                    if (!_still_used)
-//                    {
-//                        // RTC_LOG(LS_ERROR) << "hangUp stream is no more used " << stream_label;
-//                        std::lock_guard<std::mutex> mlock(this->_stream_map_mutex);
-//                        auto it = this->_stream_map.find(_stream_label);
-//                        if (it != this->_stream_map.end())
-//                        {
-//                            this->_stream_map.erase(it);
-//                        }
+//         if (_pc_observer)
+//         {
+//             auto _peer_conn = _pc_observer->get_peer_conn();
+//             auto _local_streams = _peer_conn->GetSenders();
+//             for (auto stream : _local_streams)
+//             {
+//                 auto stream_vector = stream->stream_ids();
+//                 if (stream_vector.size() > 0)
+//                 {
+//                     auto _stream_label = stream_vector[0];
+//                     bool _still_used = stream_still_used(_stream_label);
+//                     if (!_still_used)
+//                     {
+//                         // RTC_LOG(LS_ERROR) << "hangUp stream is no more used " << stream_label;
+//                         std::lock_guard<std::mutex> mlock(this->_stream_map_mutex);
+//                         auto it = this->_stream_map.find(_stream_label);
+//                         if (it != this->_stream_map.end())
+//                         {
+//                             this->_stream_map.erase(it);
+//                         }
 //
-//                        // RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
-//                    }
+//                         // RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
+//                     }
 //
-//                    /////////////////_peer_conn->RemoveTrackOrError(stream);
-//                }
-//            }
+//                     /////////////////_peer_conn->RemoveTrackOrError(stream);
+//                 }
+//             }
 //
-//            delete _pc_observer;
-//            result = true;
-//        }
-//    }
-//    Json::Value answer;
-//    if (result)
-//    {
-//        answer = result;
-//    }
-//    // RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid << " result:" << result;
-//    return answer;
-//}
+//             delete _pc_observer;
+//             result = true;
+//         }
+//     }
+//     Json::Value answer;
+//     if (result)
+//     {
+//         answer = result;
+//     }
+//     // RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid << " result:" << result;
+//     return answer;
+// }
 //
-//bool w_peer_conn_manager::stream_still_used(const std::string &p_stream_label)
+// bool w_peer_conn_manager::stream_still_used(const std::string &p_stream_label)
 //{
-//    bool _still_used = false;
-//    for (auto it : this->_peer_conn_obs_map)
-//    {
-//        auto peer_conn = it.second->get_peer_conn();
-//        auto local_streams = peer_conn->GetSenders();
-//        for (auto stream : local_streams)
-//        {
-//            std::vector<std::string> streamVector = stream->stream_ids();
-//            if (streamVector.size() > 0)
-//            {
-//                if (streamVector[0] == p_stream_label)
-//                {
-//                    _still_used = true;
-//                    break;
-//                }
-//            }
-//        }
-//    }
-//    return _still_used;
-//}
+//     bool _still_used = false;
+//     for (auto it : this->_peer_conn_obs_map)
+//     {
+//         auto peer_conn = it.second->get_peer_conn();
+//         auto local_streams = peer_conn->GetSenders();
+//         for (auto stream : local_streams)
+//         {
+//             std::vector<std::string> streamVector = stream->stream_ids();
+//             if (streamVector.size() > 0)
+//             {
+//                 if (streamVector[0] == p_stream_label)
+//                 {
+//                     _still_used = true;
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+//     return _still_used;
+// }
 //
-//bool w_peer_conn_manager::add_streams(
-//    webrtc::PeerConnectionInterface *p_peer_conn,
-//    const std::string &p_video_url,
-//    const std::string &p_audio_url,
-//    const std::string &p_options)
+// bool w_peer_conn_manager::add_streams(
+//     webrtc::PeerConnectionInterface *p_peer_conn,
+//     const std::string &p_video_url,
+//     const std::string &p_audio_url,
+//     const std::string &p_options)
 //{
-//    bool ret = false;
+//     bool ret = false;
 //
-//    // compute options
-//    std::string _opt_string = p_options;
-//    if (this->_config.isMember(p_video_url))
-//    {
-//        std::string urlopts = this->_config[p_video_url]["options"].asString();
-//        if (p_options.empty())
-//        {
-//            _opt_string = urlopts;
-//        }
-//        else if (p_options.find_first_of("&") == 0)
-//        {
-//            _opt_string = urlopts + p_options;
-//        }
-//        else
-//        {
-//            _opt_string = p_options;
-//        }
-//    }
+//     // compute options
+//     std::string _opt_string = p_options;
+//     if (this->_config.isMember(p_video_url))
+//     {
+//         std::string urlopts = this->_config[p_video_url]["options"].asString();
+//         if (p_options.empty())
+//         {
+//             _opt_string = urlopts;
+//         }
+//         else if (p_options.find_first_of("&") == 0)
+//         {
+//             _opt_string = urlopts + p_options;
+//         }
+//         else
+//         {
+//             _opt_string = p_options;
+//         }
+//     }
 //
-//    // convert options string into map
-//    std::istringstream _is(_opt_string);
-//    std::map<std::string, std::string> _opts;
-//    std::string key, value;
-//    while (std::getline(std::getline(_is, key, '='), value, '&'))
-//    {
-//        _opts[key] = value;
-//    }
+//     // convert options string into map
+//     std::istringstream _is(_opt_string);
+//     std::map<std::string, std::string> _opts;
+//     std::string key, value;
+//     while (std::getline(std::getline(_is, key, '='), value, '&'))
+//     {
+//         _opts[key] = value;
+//     }
 //
-//    std::string video = p_video_url;
-//    if (this->_config.isMember(video))
-//    {
-//        video = this->_config[video]["video"].asString();
-//    }
+//     std::string video = p_video_url;
+//     if (this->_config.isMember(video))
+//     {
+//         video = this->_config[video]["video"].asString();
+//     }
 //
-//    // compute audiourl if not set
-//    std::string audio(p_audio_url);
-//    if (audio.empty())
-//    {
-//        audio = p_video_url;
-//    }
+//     // compute audiourl if not set
+//     std::string audio(p_audio_url);
+//     if (audio.empty())
+//     {
+//         audio = p_video_url;
+//     }
 //
-//    // set bandwidth
-//    if (_opts.find("bitrate") != _opts.end())
-//    {
-//        int _bitrate = std::stoi(_opts.at("bitrate"));
+//     // set bandwidth
+//     if (_opts.find("bitrate") != _opts.end())
+//     {
+//         int _bitrate = std::stoi(_opts.at("bitrate"));
 //
-//        webrtc::BitrateSettings _bitrate_param = {};
-//        _bitrate_param.min_bitrate_bps = absl::optional<int>(_bitrate / 2);
-//        _bitrate_param.start_bitrate_bps = absl::optional<int>(_bitrate);
-//        _bitrate_param.max_bitrate_bps = absl::optional<int>(_bitrate * 2);
-//        p_peer_conn->SetBitrate(_bitrate_param);
+//         webrtc::BitrateSettings _bitrate_param = {};
+//         _bitrate_param.min_bitrate_bps = absl::optional<int>(_bitrate / 2);
+//         _bitrate_param.start_bitrate_bps = absl::optional<int>(_bitrate);
+//         _bitrate_param.max_bitrate_bps = absl::optional<int>(_bitrate * 2);
+//         p_peer_conn->SetBitrate(_bitrate_param);
 //
-//        // RTC_LOG(LS_WARNING) << "set bitrate:" << _bitrate;
-//    }
+//         // RTC_LOG(LS_WARNING) << "set bitrate:" << _bitrate;
+//     }
 //
-//    // keep capturer options (to improve!!!)
-//    std::string _opt_capturer;
-//    if ((video.find("rtsp://") == 0) || (audio.find("rtsp://") == 0))
-//    {
-//        if (_opts.find("rtptransport") != _opts.end())
-//        {
-//            _opt_capturer += _opts["rtptransport"];
-//        }
-//        if (_opts.find("timeout") != _opts.end())
-//        {
-//            _opt_capturer += _opts["timeout"];
-//        }
-//    }
+//     // keep capturer options (to improve!!!)
+//     std::string _opt_capturer;
+//     if ((video.find("rtsp://") == 0) || (audio.find("rtsp://") == 0))
+//     {
+//         if (_opts.find("rtptransport") != _opts.end())
+//         {
+//             _opt_capturer += _opts["rtptransport"];
+//         }
+//         if (_opts.find("timeout") != _opts.end())
+//         {
+//             _opt_capturer += _opts["timeout"];
+//         }
+//     }
 //
-//    // compute stream label removing space because SDP use label
-//    std::string _stream_label = sanitize_label(
-//        p_video_url + "|" + p_audio_url + "|" + _opt_capturer);
+//     // compute stream label removing space because SDP use label
+//     std::string _stream_label = sanitize_label(
+//         p_video_url + "|" + p_audio_url + "|" + _opt_capturer);
 //
-//    bool _existing_stream = false;
-//    {
-//        std::lock_guard<std::mutex> mlock(this->_stream_map_mutex);
-//        _existing_stream = (this->_stream_map.find(_stream_label) != this->_stream_map.end());
-//    }
+//     bool _existing_stream = false;
+//     {
+//         std::lock_guard<std::mutex> mlock(this->_stream_map_mutex);
+//         _existing_stream = (this->_stream_map.find(_stream_label) != this->_stream_map.end());
+//     }
 //
-//    if (!_existing_stream)
-//    {
-//        // need to create the stream
-//        rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _video_source(create_video_source(video, _opts));
-//        //////////////////rtc::scoped_refptr<webrtc::AudioSourceInterface> _audio_source(create_audio_source(audio, _opts));
-//        // RTC_LOG(LS_INFO) << "Adding Stream to map";
-//        ////////////////// std::lock_guard<std::mutex> mlock(this->_stream_map_mutex);
-//        ///////////////// this->_stream_map[_stream_label] = std::make_pair(_video_source, _audio_source);
-//    }
+//     if (!_existing_stream)
+//     {
+//         // need to create the stream
+//         rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _video_source(create_video_source(video, _opts));
+//         //////////////////rtc::scoped_refptr<webrtc::AudioSourceInterface> _audio_source(create_audio_source(audio, _opts));
+//         // RTC_LOG(LS_INFO) << "Adding Stream to map";
+//         ////////////////// std::lock_guard<std::mutex> mlock(this->_stream_map_mutex);
+//         ///////////////// this->_stream_map[_stream_label] = std::make_pair(_video_source, _audio_source);
+//     }
 //
-//    // create a new webrtc stream
-//    {
-//        std::lock_guard<std::mutex> _lock(this->_stream_map_mutex);
-//        auto it = this->_stream_map.find(_stream_label);
-//        if (it != this->_stream_map.end())
-//        {
-//            auto pair = it->second;
-//            rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _video_source(pair.first);
-//            if (!_video_source)
-//            {
-//                // RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << p_video_url;
-//            }
-//            else
-//            {
-//                rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = _peer_conn_factory->CreateVideoTrack(_stream_label + "_video", _video_source.get());
-//                if ((video_track) && (!p_peer_conn->AddTrack(video_track, {_stream_label}).ok()))
-//                {
-//                    // RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
-//                }
-//                else
-//                {
-//                    // RTC_LOG(LS_INFO) << "VideoTrack added to PeerConnection";
-//                    ret = true;
-//                }
-//            }
+//     // create a new webrtc stream
+//     {
+//         std::lock_guard<std::mutex> _lock(this->_stream_map_mutex);
+//         auto it = this->_stream_map.find(_stream_label);
+//         if (it != this->_stream_map.end())
+//         {
+//             auto pair = it->second;
+//             rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> _video_source(pair.first);
+//             if (!_video_source)
+//             {
+//                 // RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << p_video_url;
+//             }
+//             else
+//             {
+//                 rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = _peer_conn_factory->CreateVideoTrack(_stream_label + "_video", _video_source.get());
+//                 if ((video_track) && (!p_peer_conn->AddTrack(video_track, {_stream_label}).ok()))
+//                 {
+//                     // RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
+//                 }
+//                 else
+//                 {
+//                     // RTC_LOG(LS_INFO) << "VideoTrack added to PeerConnection";
+//                     ret = true;
+//                 }
+//             }
 //
-//            rtc::scoped_refptr<webrtc::AudioSourceInterface> _audio_source(pair.second);
-//            if (!_audio_source)
-//            {
-//                // RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audio;
-//            }
-//            else
-//            {
-//                auto audio_track = this->_peer_conn_factory->CreateAudioTrack(_stream_label + "_audio", _audio_source.get());
-//                if ((audio_track) && (!p_peer_conn->AddTrack(audio_track, {_stream_label}).ok()))
-//                {
-//                    // RTC_LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
-//                }
-//                else
-//                {
-//                    // RTC_LOG(LS_INFO) << "AudioTrack added to PeerConnection";
-//                    ret = true;
-//                }
-//            }
-//        }
-//        else
-//        {
-//            // RTC_LOG(LS_ERROR) << "Cannot find stream";
-//        }
-//    }
+//             rtc::scoped_refptr<webrtc::AudioSourceInterface> _audio_source(pair.second);
+//             if (!_audio_source)
+//             {
+//                 // RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audio;
+//             }
+//             else
+//             {
+//                 auto audio_track = this->_peer_conn_factory->CreateAudioTrack(_stream_label + "_audio", _audio_source.get());
+//                 if ((audio_track) && (!p_peer_conn->AddTrack(audio_track, {_stream_label}).ok()))
+//                 {
+//                     // RTC_LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
+//                 }
+//                 else
+//                 {
+//                     // RTC_LOG(LS_INFO) << "AudioTrack added to PeerConnection";
+//                     ret = true;
+//                 }
+//             }
+//         }
+//         else
+//         {
+//             // RTC_LOG(LS_ERROR) << "Cannot find stream";
+//         }
+//     }
 //
-//    return ret;
-//}
+//     return ret;
+// }
 //
-//const std::string w_peer_conn_manager::sanitize_label(const std::string &p_label)
+// const std::string w_peer_conn_manager::sanitize_label(const std::string &p_label)
 //{
-//    std::string out(p_label);
+//     std::string out(p_label);
 //
-//    // conceal labels that contain rtsp URL to prevent sensitive data leaks.
-//    if (p_label.find("rtsp:") != std::string::npos)
-//    {
-//        std::hash<std::string> hash_fn;
-//        size_t hash = hash_fn(out);
-//        return std::to_string(hash);
-//    }
+//     // conceal labels that contain rtsp URL to prevent sensitive data leaks.
+//     if (p_label.find("rtsp:") != std::string::npos)
+//     {
+//         std::hash<std::string> hash_fn;
+//         size_t hash = hash_fn(out);
+//         return std::to_string(hash);
+//     }
 //
-//    out.erase(std::remove_if(out.begin(), out.end(), ignore_in_label), out.end());
-//    return out;
-//}
+//     out.erase(std::remove_if(out.begin(), out.end(), ignore_in_label), out.end());
+//     return out;
+// }
 //
-//w_peer_conn_obs *w_peer_conn_manager::create_peer_conn_obs(const std::string &p_peer_id)
+// w_peer_conn_obs *w_peer_conn_manager::create_peer_conn_obs(const std::string &p_peer_id)
 //{
-//    std::string oldestpeerid = get_oldest_peer_conn();
-//    if (!oldestpeerid.empty())
-//    {
-//        hang_up(oldestpeerid);
-//    }
+//     std::string oldestpeerid = get_oldest_peer_conn();
+//     if (!oldestpeerid.empty())
+//     {
+//         hang_up(oldestpeerid);
+//     }
 //
-//    webrtc::PeerConnectionInterface::RTCConfiguration config;
-//    if (this->_use_plan_b)
-//    {
-//        config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
-//    }
-//    else
-//    {
-//        config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
-//    }
-//    for (auto iceServer : this->_ice_server_list)
-//    {
-//        webrtc::PeerConnectionInterface::IceServer _server = {};
-//        auto _srv = get_ice_server_from_url(iceServer);
-//        _server.uri = _srv.url;
-//        _server.username = _srv.user;
-//        _server.password = _srv.pass;
-//        config.servers.push_back(_server);
-//    }
+//     webrtc::PeerConnectionInterface::RTCConfiguration config;
+//     if (this->_use_plan_b)
+//     {
+//         config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
+//     }
+//     else
+//     {
+//         config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+//     }
+//     for (auto iceServer : this->_ice_server_list)
+//     {
+//         webrtc::PeerConnectionInterface::IceServer _server = {};
+//         auto _srv = get_ice_server_from_url(iceServer);
+//         _server.uri = _srv.url;
+//         _server.username = _srv.user;
+//         _server.password = _srv.pass;
+//         config.servers.push_back(_server);
+//     }
 //
-//    // Use example From https://soru.site/questions/51578447/api-c-webrtcyi-kullanarak-peerconnection-ve-ucretsiz-baglant-noktasn-serbest-nasl
-//    int _min_port = 0;
-//    int _max_port = 65535;
-//    std::istringstream _is(this->_webrtc_port_range);
-//    std::string port;
-//    if (std::getline(_is, port, ':'))
-//    {
-//        _min_port = std::stoi(port);
-//        if (std::getline(_is, port, ':'))
-//        {
-//            _max_port = std::stoi(port);
-//        }
-//    }
+//     // Use example From https://soru.site/questions/51578447/api-c-webrtcyi-kullanarak-peerconnection-ve-ucretsiz-baglant-noktasn-serbest-nasl
+//     int _min_port = 0;
+//     int _max_port = 65535;
+//     std::istringstream _is(this->_webrtc_port_range);
+//     std::string port;
+//     if (std::getline(_is, port, ':'))
+//     {
+//         _min_port = std::stoi(port);
+//         if (std::getline(_is, port, ':'))
+//         {
+//             _max_port = std::stoi(port);
+//         }
+//     }
 //
-//    ////////////config.port_allocator_config.min_port = _min_port;
-//    ////////////config.port_allocator_config.max_port = _max_port;
+//     ////////////config.port_allocator_config.min_port = _min_port;
+//     ////////////config.port_allocator_config.max_port = _max_port;
 //
-//    // RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid << " webrtcPortRange:" << minPort << ":" << maxPort;
+//     // RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid << " webrtcPortRange:" << minPort << ":" << maxPort;
 //
-//    auto *_obs = new (std::nothrow) w_peer_conn_obs(this, p_peer_id, config);
-//    if (!_obs)
-//    {
-//        // RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection failed";
-//    }
-//    return _obs;
-//}
+//     auto *_obs = new (std::nothrow) w_peer_conn_obs(this, p_peer_id, config);
+//     if (!_obs)
+//     {
+//         // RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection failed";
+//     }
+//     return _obs;
+// }
 //
-//rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> w_peer_conn_manager::create_video_source(
-//    const std::string &p_video_url,
-//    const std::map<std::string, std::string> &p_opts)
+// rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> w_peer_conn_manager::create_video_source(
+//     const std::string &p_video_url,
+//     const std::map<std::string, std::string> &p_opts)
 //{
-//    std::string _video = p_video_url;
-//    if (this->_config.isMember(_video))
-//    {
-//        _video = this->_config[_video]["video"].asString();
-//    }
+//     std::string _video = p_video_url;
+//     if (this->_config.isMember(_video))
+//     {
+//         _video = this->_config[_video]["video"].asString();
+//     }
 //
-//    return w_capturer_factory::create_video_source(
-//        _video,
-//        p_opts,
-//        this->_publish_filter,
-//        this->_peer_conn_factory);
-//}
+//     return w_capturer_factory::create_video_source(
+//         _video,
+//         p_opts,
+//         this->_publish_filter,
+//         this->_peer_conn_factory);
+// }
 //
 //// rtc::scoped_refptr<webrtc::AudioSourceInterface> w_peer_conn_manager::create_audio_source(
 ////     const std::string &p_audio_url,
@@ -741,17 +780,17 @@ w_peer_conn_manager::~w_peer_conn_manager()
 ////     return answer;
 //// }
 //
-//bool w_peer_conn_manager::get_is_initialized() const
+// bool w_peer_conn_manager::get_is_initialized() const
 //{
 //    return (_peer_conn_factory.get() != nullptr);
 //}
 //
-//const std::map<std::string, w_http_function> w_peer_conn_manager::get_http_api() const
+// const std::map<std::string, w_http_function> w_peer_conn_manager::get_http_api() const
 //{
 //    return this->_funcs;
 //}
 //
-//const Json::Value w_peer_conn_manager::get_ice_candidate_list(const std::string &p_peer_id)
+// const Json::Value w_peer_conn_manager::get_ice_candidate_list(const std::string &p_peer_id)
 //{
 //    // RTC_LOG(LS_INFO) << __FUNCTION__;
 //
@@ -773,7 +812,7 @@ w_peer_conn_manager::~w_peer_conn_manager()
 //    return value;
 //}
 //
-//const Json::Value w_peer_conn_manager::get_video_device_list()
+// const Json::Value w_peer_conn_manager::get_video_device_list()
 //{
 //    Json::Value value(Json::arrayValue);
 //
@@ -803,7 +842,7 @@ w_peer_conn_manager::~w_peer_conn_manager()
 ////     return value;
 //// }
 //
-//const Json::Value w_peer_conn_manager::get_media_list()
+// const Json::Value w_peer_conn_manager::get_media_list()
 //{
 //    Json::Value value(Json::arrayValue);
 //
@@ -852,7 +891,7 @@ w_peer_conn_manager::~w_peer_conn_manager()
 //    return value;
 //}
 //
-//std::string w_peer_conn_manager::get_oldest_peer_conn()
+// std::string w_peer_conn_manager::get_oldest_peer_conn()
 //{
 //    uint64_t oldestpc = std::numeric_limits<uint64_t>::max();
 //    std::string oldestpeerid;
@@ -922,20 +961,6 @@ w_peer_conn_manager::~w_peer_conn_manager()
 //     return std::make_pair(headers, answersdp);
 // }
 
-// void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer)
-// {
-// #ifdef HAVE_SOUND
-//     m_audioDeviceModule = webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get());
-//     if (m_audioDeviceModule->Init() != 0)
-//     {
-//         RTC_LOG(LS_WARNING) << "audio init fails -> disable audio capture";
-//         m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
-//     }
-// #else
-//     m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
-// #endif
-// }
-
 // /* ---------------------------------------------------------------------------
 // **  return iceServers as JSON vector
 // ** -------------------------------------------------------------------------*/
@@ -976,50 +1001,6 @@ w_peer_conn_manager::~w_peer_conn_manager()
 //         peerConnection = it->second->getPeerConnection();
 //     }
 //     return peerConnection;
-// }
-// /* ---------------------------------------------------------------------------
-// **  add ICE candidate to a PeerConnection
-// ** -------------------------------------------------------------------------*/
-// const Json::Value PeerConnectionManager::addIceCandidate(const std::string &peerid, const Json::Value &jmessage)
-// {
-//     bool result = false;
-//     std::string sdp_mid;
-//     int sdp_mlineindex = 0;
-//     std::string sdp;
-//     if (!rtc::GetStringFromJsonObject(jmessage, s_candidate_sdp_midname, &sdp_mid) || !rtc::GetIntFromJsonObject(jmessage, s_candidate_sdp_mline_index_name, &sdp_mlineindex) || !rtc::GetStringFromJsonObject(jmessage, s_candidate_sdp_name, &sdp))
-//     {
-//         RTC_LOG(LS_WARNING) << "Can't parse received message:" << jmessage;
-//     }
-//     else
-//     {
-//         std::unique_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, NULL));
-//         if (!candidate.get())
-//         {
-//             RTC_LOG(LS_WARNING) << "Can't parse received candidate message.";
-//         }
-//         else
-//         {
-//             std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-//             rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
-//             if (peerConnection)
-//             {
-//                 if (!peerConnection->AddIceCandidate(candidate.get()))
-//                 {
-//                     RTC_LOG(LS_WARNING) << "Failed to apply the received candidate";
-//                 }
-//                 else
-//                 {
-//                     result = true;
-//                 }
-//             }
-//         }
-//     }
-//     Json::Value answer;
-//     if (result)
-//     {
-//         answer = result;
-//     }
-//     return answer;
 // }
 
 // /* ---------------------------------------------------------------------------

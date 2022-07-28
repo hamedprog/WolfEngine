@@ -7,9 +7,9 @@
 
 using w_vcm_capturer = wolf::stream::webRTC::w_vcm_capturer;
 
-w_vcm_capturer::~w_vcm_capturer() 
-{ 
-	fini(); 
+w_vcm_capturer::~w_vcm_capturer()
+{
+	fini();
 }
 
 void w_vcm_capturer::OnFrame(const webrtc::VideoFrame &p_frame)
@@ -18,18 +18,17 @@ void w_vcm_capturer::OnFrame(const webrtc::VideoFrame &p_frame)
 }
 
 bool w_vcm_capturer::init(size_t p_width,
-	size_t p_height,
-	size_t p_target_fps,
-	const std::string& p_video_url)
+						  size_t p_height,
+						  size_t p_target_fps,
+						  const std::string &p_video_url)
 {
 	bool _ret = true;
-	gsl::finally([&]()
-		{
+	auto _fin = gsl::finally([&]()
+							 {
 			if (!_ret)
 			{
 				fini();
-			}
-		});
+			} });
 
 	this->_width = p_width;
 	this->_height = p_height;
@@ -53,11 +52,11 @@ bool w_vcm_capturer::init(size_t p_width,
 		const int _device_number = atoi(_str.c_str());
 
 		if (_device_info->GetDeviceName(
-			_device_number,
-			&_name[0],
-			W_MAX_PATH,
-			&_id[0],
-			W_MAX_PATH) == 0)
+				_device_number,
+				&_name[0],
+				W_MAX_PATH,
+				&_id[0],
+				W_MAX_PATH) == 0)
 		{
 			_device_id = std::move(_id);
 		}
@@ -67,10 +66,10 @@ bool w_vcm_capturer::init(size_t p_width,
 		for (uint32_t i = 0; i < _num_video_devices; ++i)
 		{
 			if (_device_info->GetDeviceName(i,
-				_name.data(),
-				W_MAX_PATH,
-				_id.data(),
-				W_MAX_PATH) == 0)
+											_name.data(),
+											W_MAX_PATH,
+											_id.data(),
+											W_MAX_PATH) == 0)
 			{
 				if (p_video_url == _name)
 				{
@@ -101,9 +100,9 @@ bool w_vcm_capturer::init(size_t p_width,
 	_capability.videoType = webrtc::VideoType::kI420;
 
 	if (_device_info->GetBestMatchedCapability(
-		this->_vcm->CurrentDeviceName(),
-		_capability,
-		_capability) < 0)
+			this->_vcm->CurrentDeviceName(),
+			_capability,
+			_capability) < 0)
 	{
 		_device_info->GetCapability(
 			this->_vcm->CurrentDeviceName(),
@@ -139,27 +138,25 @@ size_t w_vcm_capturer::get_height() const noexcept
 	return this->_height;
 }
 
-w_vcm_capturer* w_vcm_capturer::create(
-	const std::string& p_video_url,
+w_vcm_capturer *w_vcm_capturer::create(
+	const std::string &p_video_url,
 	const std::map<std::string,
-	std::string>& p_opts)
+				   std::string> &p_opts)
 {
-	auto* _vcm_capturer = new (std::nothrow) w_vcm_capturer();
+	gsl::owner<w_vcm_capturer *> _vcm_capturer = new (std::nothrow) w_vcm_capturer();
 	if (_vcm_capturer == nullptr)
 	{
 		return nullptr;
 	}
 
 	bool _ret = true;
-	gsl::finally([&]()
-		{
+	auto _fin = gsl::finally([&]()
+							 {
 			if (!_ret)
 			{
 				_vcm_capturer->fini();
 				delete _vcm_capturer;
-			}
-		});
-
+			} });
 
 	size_t width = 0;
 	size_t height = 0;
@@ -179,10 +176,10 @@ w_vcm_capturer* w_vcm_capturer::create(
 	}
 
 	if (_vcm_capturer->init(
-		width,
-		height,
-		fps,
-		p_video_url) == false)
+			width,
+			height,
+			fps,
+			p_video_url) == false)
 	{
 		_ret = false;
 		return nullptr;

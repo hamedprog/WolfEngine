@@ -5,9 +5,15 @@
 
 #pragma once
 
+#include <wolf.hpp>
+#include <future>
+
+#include "DISABLE_ANALYSIS_BEGIN"
+
 #include <api/peer_connection_interface.h>
 #include <api/scoped_refptr.h>
-#include <future>
+
+#include "DISABLE_ANALYSIS_END"
 
 namespace wolf::stream::webRTC
 {

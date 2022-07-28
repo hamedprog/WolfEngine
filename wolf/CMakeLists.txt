@@ -409,7 +409,7 @@ source_group("system" FILES ${WOLF_SYSTEM_SRC})
 
 # add compile options
 if (NOT WIN32)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC -Wall)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fPIC)# -Wall)
 endif()
 
 # build tests
