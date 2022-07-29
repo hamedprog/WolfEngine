@@ -33,7 +33,7 @@ namespace wolf::stream::webRTC
         //rapidjson::Value& get_ice_candidate_list();
         //rapidjson::Value& get_stats();
 
-        //rtc::scoped_refptr<webrtc::PeerConnectionInterface> get_peer_conn();
+        rtc::scoped_refptr<webrtc::PeerConnectionInterface> get_peer_conn();
 
         //void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> p_stream) override;
         //void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> p_stream) override;

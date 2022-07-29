@@ -71,12 +71,12 @@ w_peer_conn_obs::~w_peer_conn_obs()
 //    }
 //    return Json::Value(this->_stats_callback->get_report());
 //};
-//
-//rtc::scoped_refptr<webrtc::PeerConnectionInterface> w_peer_conn_obs::get_peer_conn()
-//{
-//    return this->_pc;
-//};
-//
+
+rtc::scoped_refptr<webrtc::PeerConnectionInterface> w_peer_conn_obs::get_peer_conn()
+{
+   return this->_pc;
+}
+
 //void w_peer_conn_obs::OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
 //{
 //    // RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " nb

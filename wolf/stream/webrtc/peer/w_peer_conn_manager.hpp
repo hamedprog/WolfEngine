@@ -55,15 +55,18 @@ namespace wolf::stream::webRTC
             const std::string &p_peer_id,
             const rapidjson::Value &p_jmessage);
 
+        rtc::scoped_refptr<webrtc::PeerConnectionInterface> get_peer_conn(const std::string &p_peer_id);
+        //const rapidjson::Value hang_up(const std::string& p_peer_id);
+        
         /*
-        //const Json::Value hang_up(const std::string& peerid);
         // const Json::Value call(const std::string &p_peerid,
         //                        const std::string &p_videourl,
         //                        const std::string &p_audiourl,
         //                        const std::string &p_options,
         //                        const Json::Value &p_message);
 
-        /*bool get_is_initialized() const;
+        /*
+        bool get_is_initialized() const;
         const std::map<std::string, http::w_http_function> get_http_api() const;
         const Json::Value get_ice_candidate_list(const std::string& peerid);
         const Json::Value get_video_device_list();*/
@@ -117,8 +120,6 @@ namespace wolf::stream::webRTC
         // std::string get_oldest_peer_conn();
 
         //// const std::list<std::string> get_video_capture_device_list();
-
-        //// rtc::scoped_refptr<webrtc::PeerConnectionInterface> get_peer_conn(const std::string &p_peer_id);
 
         std::unique_ptr<rtc::Thread> _signaling_thread;
         std::unique_ptr<rtc::Thread> _worker_thread;
