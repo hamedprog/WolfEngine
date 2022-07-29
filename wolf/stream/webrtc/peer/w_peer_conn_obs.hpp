@@ -30,22 +30,22 @@ namespace wolf::stream::webRTC
             const webrtc::PeerConnectionInterface::RTCConfiguration& p_config);
         virtual ~w_peer_conn_obs();
 
-        //rapidjson::Value& get_ice_candidate_list();
-        //rapidjson::Value& get_stats();
+        rapidjson::Value& get_ice_candidate_list();
+        rapidjson::Value& get_stats();
 
         rtc::scoped_refptr<webrtc::PeerConnectionInterface> get_peer_conn();
 
-        //void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> p_stream) override;
-        //void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> p_stream) override;
-        //void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> p_channel) override;
-        //void OnRenegotiationNeeded() override;
-        //void OnIceCandidate(const webrtc::IceCandidateInterface* p_candidate) override;
-        //void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState p_state) override;
-        //void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState p_state) override;
-        //void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState p_state) override;
+        void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> p_stream) override;
+        void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> p_stream) override;
+        void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> p_channel) override;
+        void OnRenegotiationNeeded() override;
+        void OnIceCandidate(const webrtc::IceCandidateInterface* p_candidate) override;
+        void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState p_state) override;
+        void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState p_state) override;
+        void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState p_state) override;
 
-        //uint64_t get_creation_time() const;
-        //std::string get_peer_id() const;
+        uint64_t get_creation_time() const;
+        std::string get_peer_id() const;
 
     private:
         w_peer_conn_manager* _peer_conn_manager;
