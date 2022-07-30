@@ -6,23 +6,23 @@
 using w_peer_conn_obs = wolf::stream::webRTC::w_peer_conn_obs;
 
 w_peer_conn_obs::w_peer_conn_obs(
-    w_peer_conn_manager* p_peer_conn_manager,
-    const std::string& p_peerid,
-    const webrtc::PeerConnectionInterface::RTCConfiguration& p_config)
+    w_peer_conn_manager *p_peer_conn_manager,
+    const std::string &p_peerid,
+    const webrtc::PeerConnectionInterface::RTCConfiguration &p_config)
     : _peer_conn_manager(p_peer_conn_manager),
-    _peer_id(p_peerid),
-    _local_channel(nullptr),
-    _remote_channel(nullptr),
-    _deleting(false),
-    _creation_time(rtc::TimeMicros())
+      _peer_id(p_peerid),
+      _local_channel(nullptr),
+      _remote_channel(nullptr),
+      _deleting(false),
+      _creation_time(rtc::TimeMicros())
 {
     webrtc::PeerConnectionDependencies _dependencies(this);
 
-    //webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::PeerConnectionInterface>> result =
-      //  this->_peer_conn_manager->peer_connection_factory->CreatePeerConnectionOrError(p_config, std::move(dependencies));
-    //if (result.ok())
+    // webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::PeerConnectionInterface>> result =
+    //   this->_peer_conn_manager->peer_connection_factory->CreatePeerConnectionOrError(p_config, std::move(dependencies));
+    // if (result.ok())
     //{
-    //    this->_pc = result.MoveValue();
+    //     this->_pc = result.MoveValue();
 
     //    webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::DataChannelInterface>>
     //        error_or_channel = this->_pc->CreateDataChannelOrError("ServerDataChannel", NULL);
@@ -35,12 +35,12 @@ w_peer_conn_obs::w_peer_conn_obs(
     //        //LOG
     //    }
     //}
-    //else
+    // else
     //{
     //    // LOG
     //}
 
-    //this->_stats_callback = new rtc::RefCountedObject<w_peer_conn_stats_collector_callback>();
+    // this->_stats_callback = new rtc::RefCountedObject<w_peer_conn_stats_collector_callback>();
 }
 
 w_peer_conn_obs::~w_peer_conn_obs()
@@ -54,12 +54,12 @@ w_peer_conn_obs::~w_peer_conn_obs()
     }
 }
 
-rapidjson::Value& w_peer_conn_obs::get_ice_candidate_list()
+rapidjson::Value &w_peer_conn_obs::get_ice_candidate_list()
 {
     return this->_ice_candidate_list;
 }
 
-rapidjson::Value& w_peer_conn_obs::get_stats()
+rapidjson::Value &w_peer_conn_obs::get_stats()
 {
     this->_stats_callback->clear_report();
     this->_pc->GetStats(this->_stats_callback.get());
@@ -73,7 +73,7 @@ rapidjson::Value& w_peer_conn_obs::get_stats()
 
 rtc::scoped_refptr<webrtc::PeerConnectionInterface> w_peer_conn_obs::get_peer_conn()
 {
-   return this->_pc;
+    return this->_pc;
 }
 
 void w_peer_conn_obs::OnAddStream(
@@ -83,19 +83,19 @@ void w_peer_conn_obs::OnAddStream(
     //     video tracks : " << stream->GetVideoTracks().size();
     //                    webrtc::VideoTrackVector videoTracks = stream->GetVideoTracks();
 
-   /* if (this->_video_tracks.size() > 0)
-    {
-        this->_video_sink.reset(new w_video_sink(this->_video_tracks.at(0)));
-    }*/
+    /* if (this->_video_tracks.size() > 0)
+     {
+         this->_video_sink.reset(new w_video_sink(this->_video_tracks.at(0)));
+     }*/
 
     // RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " nb
     //     audio tracks : " << stream->GetAudioTracks().size();
     //                    webrtc::AudioTrackVector audioTracks = stream->GetAudioTracks();
 
-  /*  if (this->_audio_tracks.size() > 0)
-    {
-        this->_audio_sink.reset(new w_audio_sink(this->_audio_tracks.at(0)));
-    }*/
+    /*  if (this->_audio_tracks.size() > 0)
+      {
+          this->_audio_sink.reset(new w_audio_sink(this->_audio_tracks.at(0)));
+      }*/
 }
 
 void w_peer_conn_obs::OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
@@ -113,31 +113,28 @@ void w_peer_conn_obs::OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterf
 
 void w_peer_conn_obs::OnRenegotiationNeeded()
 {
- 
 }
 
 void w_peer_conn_obs::OnIceCandidate(
-    const webrtc::IceCandidateInterface* p_candidate)
+    const webrtc::IceCandidateInterface *p_candidate)
 {
     std::string sdp;
     if (!p_candidate->ToString(&sdp))
     {
- 
     }
     else
     {
-        //rapidjson::Value jmessage;
-        //jmessage[kCandidateSdpMidName] = p_candidate->sdp_mid();
-        //jmessage[kCandidateSdpMlineIndexName] = p_candidate->sdp_mline_index();
-        //jmessage[kCandidateSdpName] = sdp;
-        //this->_ice_candidate_list.append(jmessage);
-    }   
+        //////rapidjson::Value jmessage;
+        //////jmessage[kCandidateSdpMidName] = p_candidate->sdp_mid();
+        //////jmessage[kCandidateSdpMlineIndexName] = p_candidate->sdp_mline_index();
+        //////jmessage[kCandidateSdpName] = sdp;
+        //////this->_ice_candidate_list.append(jmessage);
+    }
 }
 
 void w_peer_conn_obs::OnSignalingChange(
     webrtc::PeerConnectionInterface::SignalingState state)
 {
-
 }
 
 void w_peer_conn_obs::OnIceConnectionChange(
@@ -150,9 +147,10 @@ void w_peer_conn_obs::OnIceConnectionChange(
         if (!this->_deleting)
         {
             std::thread([this]()
-                {
-                    //////////this->_peer_connection_manager->hang_up(this->_peer_id); })
-                }).detach();
+                        {
+                            //////////this->_peer_connection_manager->hang_up(this->_peer_id); })
+                        })
+                .detach();
         }
     }
 }

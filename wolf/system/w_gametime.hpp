@@ -13,7 +13,7 @@ constexpr auto TARGET_ELAPSED_SECS = 1.0 / 60.0;
 
 namespace wolf::system
 {
-    class w_gametime
+    class w_gametime : w_base
     {
     public:
         // default constructor
@@ -38,8 +38,8 @@ namespace wolf::system
 
         void set_target_elapsed_secs(double p_value) noexcept;
 
-        template <typename F> 
-        void tick(F&& p_tick_function)
+        template <typename F>
+        void tick(F &&p_tick_function)
         {
             using namespace std::chrono;
 
@@ -120,7 +120,7 @@ namespace wolf::system
         // configuring fixed timestep mode.
         bool _fixed_time_step = false;
 
-        double _target_elapsed_secs = { TARGET_ELAPSED_SECS };
+        double _target_elapsed_secs = {TARGET_ELAPSED_SECS};
         double _elapsed_secs = 0.0;
         double _total_secs = 0.0;
         double _left_over_ticks = 0.0;
@@ -130,10 +130,10 @@ namespace wolf::system
         uint32_t _frames_this_sec = 0;
 
         std::chrono::steady_clock::time_point _last_time = {
-            std::chrono::steady_clock::now() };
+            std::chrono::steady_clock::now()};
     }
 #ifdef __clang__
     __attribute__((packed)) __attribute__((aligned(64)))
 #endif
-        ;
+    ;
 } // namespace wolf::system
